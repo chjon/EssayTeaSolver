@@ -53,105 +53,33 @@ dag_node_t* dag_parse_bracket(const char* str, int* index, int level) {
 dag_node_t* dag_parse_helper(const char* str, int* index, int level) {
 	enum state { PARSE_LEFT, PARSE_CONNECTIVE, PARSE_RIGHT, COMPLETE, ERROR };
 	enum state current_state = PARSE_LEFT;
-
-	if (str == NULL || level < 0 || !str[*index]) {
-		return NULL;
-	}
-
-	dag_node_t* node  = NULL;
-	dag_node_t* left  = NULL;
-	dag_node_t* right = NULL;
+	dag_node_t* parsed = NULL;
+	dag_node_t* left   = NULL;
+	dag_node_t* right  = NULL;
 	int type = -1;
 	int value = -1;
 
+	if (str == NULL || !str[*index]) {
+		return NULL;
+	}
+
 	while (str[*index] && current_state != ERROR && current_state != COMPLETE) {
-		if (str[*index] == '(') {
-			switch (current_state) {
-			case PARSE_LEFT:
-				left = dag_parse_bracket(str, index, level + 1);
-				if (left == NULL) {
-					current_state = ERROR;
-				} else {
-					current_state = PARSE_CONNECTIVE;
-				}
-				break;
-			case PARSE_RIGHT:
-				right = dag_parse_bracket(str, index, level + 1);
-				if (right == NULL) {
-					current_state = ERROR;
-				} else {
-					current_state = COMPLETE;
-				}
-				break;
-			default:
-				current_state = ERROR;
-				break;
-			}
-		} else if (str[*index] == 'x') {
-			switch (current_state) {
-				case PARSE_LEFT:
-					left = dag_parse_variable(str, index);
-					if (left == NULL) {
-						current_state = ERROR;
-					} else {
-						current_state = PARSE_CONNECTIVE;
-					}
-					break;
-				case PARSE_RIGHT:
-					right = dag_parse_variable(str, index);
-					if (right == NULL) {
-						current_state = ERROR;
-					} else {
-						current_state = COMPLETE;
-					}
-					break;
-				default:
-					current_state = ERROR;
-					break; 
-			}
-		} else if (str[*index] == '~') {
-			if (current_state != PARSE_LEFT && current_state != PARSE_RIGHT) {
-				current_state = ERROR;
-				continue;
-			}
-
-			++*index;
-			dag_node_t* parsed;
-			if (str[*index] == 'x') {
-				parsed = dag_parse_variable(str, index);
-			} else if (str[*index] == '(') {
-				parsed = dag_parse_bracket(str, index, level + 1);
-			}
-
-			if (parsed == NULL) {
-				current_state = ERROR;
-				continue;
-			}
-
-			parsed = dag_new(DAG_TYPE_CONNECT, DAG_CONNECT_NOT, parsed, parsed);
-			if (current_state == PARSE_LEFT) {
-				left = parsed;
-				current_state = PARSE_CONNECTIVE;
-			} else {
-				right = parsed;
+		if (current_state == PARSE_CONNECTIVE) {
+			if (str[*index] == ')') {
 				current_state = COMPLETE;
+				continue;
 			}
-		} else if (current_state == PARSE_CONNECTIVE) {
+
 			current_state = PARSE_RIGHT;
 
 			switch (str[*index]) {
-			case ')':
-				current_state = COMPLETE;
-				break;
 			case '|':
 				type = DAG_TYPE_CONNECT;
 				value = DAG_CONNECT_OR;
-				++*index;
 				break;
 			case '&':
 				type = DAG_TYPE_CONNECT;
 				value = DAG_CONNECT_AND;
-				++*index;
 				break;
 			case '-':
 				if (str[++*index] == '>') {
@@ -176,8 +104,37 @@ dag_node_t* dag_parse_helper(const char* str, int* index, int level) {
 				current_state = ERROR;
 				break;
 			}
-		} else {
+
+			++*index;
+			continue;
+		}
+		
+		int negate = (str[*index] == '~');
+		parsed = NULL;
+
+		if (negate) ++*index;
+
+		if (str[*index] == 'x') {
+			parsed = dag_parse_variable(str, index);
+		} else if (str[*index] == '(') {
+			parsed = dag_parse_bracket(str, index, level + 1);
+		}
+
+		if (parsed == NULL) {
 			current_state = ERROR;
+			continue;
+		}
+
+		if (negate) {
+			parsed = dag_new(DAG_TYPE_CONNECT, DAG_CONNECT_NOT, parsed, parsed);
+		}
+
+		if (current_state == PARSE_LEFT) {
+			left = parsed;
+			current_state = PARSE_CONNECTIVE;
+		} else {
+			right = parsed;
+			current_state = COMPLETE;
 		}
 	}
 
@@ -188,13 +145,12 @@ dag_node_t* dag_parse_helper(const char* str, int* index, int level) {
 	if (current_state == COMPLETE && (!str[*index] || level)) {
 		if (right == NULL) return left;
 		if (left == NULL) left = right;
-		node = dag_new(type, value, left, right);
+		return dag_new(type, value, left, right);
 	} else {
 		if (left != NULL) dag_delete(left);
 		if (right != NULL) dag_delete(right);
+		return NULL;
 	}
-
-	return node;
 }
 
 dag_node_t* dag_parse(const char* str) {
