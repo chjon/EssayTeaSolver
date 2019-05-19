@@ -13,7 +13,7 @@ TARGETS = solver.out
 
 all: ${TARGETS}
 
-boolean_SAT.out: $(OBJS) 
+solver.out: $(OBJS) 
 	$(LD) -o $@ $^ $(LDLIBS) $(LDFLAGS) 
 
 %.o: %.c 

@@ -52,17 +52,19 @@ dag_node_t* dag_parse_helper(const char* str, int* index, int level) {
 			switch (current_state) {
 			case PARSE_LEFT:
 				left = dag_parse_helper(str, index, level + 1);
-				if (left == NULL || str[*index++] != ')') {
+				if (left == NULL || str[*index] != ')') {
 					current_state = ERROR;
 				} else {
+					++*index;
 					current_state = PARSE_CONNECTIVE;
 				}
 				break;
 			case PARSE_RIGHT:
 				right = dag_parse_helper(str, index, level + 1);
-				if (right == NULL || str[*index++] != ')') {
+				if (right == NULL || str[*index] != ')') {
 					current_state = ERROR;
 				} else {
+					++*index;
 					current_state = COMPLETE;
 				}
 				break;
@@ -104,13 +106,18 @@ dag_node_t* dag_parse_helper(const char* str, int* index, int level) {
 			current_state = PARSE_RIGHT;
 
 			switch (str[*index]) {
+			case ')':
+				current_state = COMPLETE;
+				break;
 			case '|':
 				type = DAG_TYPE_CONNECT;
 				value = DAG_CONNECT_OR;
+				++*index;
 				break;
 			case '&':
 				type = DAG_TYPE_CONNECT;
 				value = DAG_CONNECT_AND;
+				++*index;
 				break;
 			case '-':
 				if (str[++*index] == '>') {
@@ -140,22 +147,26 @@ dag_node_t* dag_parse_helper(const char* str, int* index, int level) {
 		}
 	}
 
+	if (!str[*index] && current_state == PARSE_CONNECTIVE) {
+		current_state = COMPLETE;
+	}
+
 	if (current_state == ERROR || (str[*index] && !level)) {
 		if (left != NULL) dag_delete(left);
 		if (right != NULL) dag_delete(right);
 		return NULL;
 	} else if (current_state == COMPLETE) {
+		if (right == NULL) return left;
 		if (left == NULL) left = right;
 		node = dag_new(type, value, left, right);
 		return node;
-	} else if (current_state == PARSE_CONNECTIVE) {
-		return left;
 	} else {
 		if (left != NULL) dag_delete(left);
 		if (right != NULL) dag_delete(right);
 		return NULL;
 	}
 }
+
 dag_node_t* dag_parse(const char* str) {
 	int index = 0;
 	return dag_parse_helper(str, &index, 0);
@@ -189,21 +200,24 @@ void dag_delete(dag_node_t* node) {
 	}
 }
 
+int dag_print_helper(dag_node_t*);
+
 int dag_print_connect(const char* connective, dag_node_t* left, dag_node_t* right) {
 	if (left == NULL || right == NULL) {
 		return 1;
 	}
 
 	printf("(");
-	if (dag_print(left)) return 1;
+	if (dag_print_helper(left)) return 1;
 	printf(")%s(", connective);
-	if (dag_print(right)) return 1;
+	if (dag_print_helper(right)) return 1;
 	printf(")");
 	return 0;
 }
 
 int dag_print_helper(dag_node_t* node) {
 	if (node == NULL) {
+		printf("NULL");
 		return 0;
 	}
 
