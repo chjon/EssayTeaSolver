@@ -24,4 +24,6 @@ typedef struct dag_node_t {
 /***** FUNCTIONS *****/
 
 dag_node_t* dag_new(int, int, struct dag_node_t*, struct dag_node_t*);
+void dag_delete(dag_node_t*);
+
 int dag_print(dag_node_t*);

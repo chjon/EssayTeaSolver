@@ -14,6 +14,7 @@ int main(const int argc, const char** argv) {
 	dag_print(dag);
 	dag->value = 2;
 	dag_print(dag);
+	dag_delete(dag);
 
 	return 0;
 }

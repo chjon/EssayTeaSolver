@@ -11,6 +11,34 @@ dag_node_t* dag_new(int type, int value, struct dag_node_t* left, struct dag_nod
 	return dag;
 }
 
+void dag_delete(dag_node_t* node) {
+	if (node == NULL) {
+		return;
+	}
+
+	switch (node->type) {
+	case DAG_TYPE_CONNECT:
+		switch (node->value) {
+		case DAG_CONNECT_OR:
+		case DAG_CONNECT_AND:
+		case DAG_CONNECT_IMPLY:
+		case DAG_CONNECT_IFF:
+			dag_delete(node->right);
+		case DAG_CONNECT_NOT:
+			dag_delete(node->left);
+		default:
+			break;
+		}
+		node->right = NULL;
+		node->left  = NULL;
+	case DAG_TYPE_CONSTANT:
+	case DAG_TYPE_VARIABLE:
+		free(node);
+	default:
+		return;
+	}
+}
+
 int dag_print_connect(const char* connective, dag_node_t* left, dag_node_t* right) {
 	if (left == NULL || right == NULL) {
 		return 1;
