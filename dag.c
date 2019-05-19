@@ -11,7 +11,53 @@ dag_node_t* dag_new(int type, int value, struct dag_node_t* left, struct dag_nod
 	return dag;
 }
 
-dag_node_t* dag_parse_helper(const char* str, int* index, int level);
+dag_node_t* dag_parse_helper(const char*, int*, int);
+dag_node_t* dag_parse_variable(const char*, int*);
+dag_node_t* dag_parse_bracket(const char*, int*, int);
+
+dag_node_t* dag_parse(const char* str) {
+	int index = 0;
+	return dag_parse_helper(str, &index, 0);
+}
+
+void dag_delete(dag_node_t* node) {
+	if (node == NULL) {
+		return;
+	}
+
+	switch (node->type) {
+	case DAG_TYPE_CONNECT:
+		switch (node->value) {
+		case DAG_CONNECT_OR:
+		case DAG_CONNECT_AND:
+		case DAG_CONNECT_IMPLY:
+		case DAG_CONNECT_IFF:
+			dag_delete(node->right);
+		case DAG_CONNECT_NOT:
+			dag_delete(node->left);
+		default:
+			break;
+		}
+		node->right = NULL;
+		node->left  = NULL;
+	case DAG_TYPE_CONSTANT:
+	case DAG_TYPE_VARIABLE:
+		free(node);
+	default:
+		return;
+	}
+}
+
+int dag_print_helper(dag_node_t*);
+int dag_print_connect(const char*, dag_node_t*, dag_node_t*);
+
+int dag_print(dag_node_t* node) {
+	if (dag_print_helper(node)) return 1;
+	printf("\n");
+	return 0;
+}
+
+/***** HELPER FUNCTIONS *****/
 
 dag_node_t* dag_parse_variable(const char* str, int* index) {
 	dag_node_t* node = NULL;
@@ -153,41 +199,6 @@ dag_node_t* dag_parse_helper(const char* str, int* index, int level) {
 	}
 }
 
-dag_node_t* dag_parse(const char* str) {
-	int index = 0;
-	return dag_parse_helper(str, &index, 0);
-}
-
-void dag_delete(dag_node_t* node) {
-	if (node == NULL) {
-		return;
-	}
-
-	switch (node->type) {
-	case DAG_TYPE_CONNECT:
-		switch (node->value) {
-		case DAG_CONNECT_OR:
-		case DAG_CONNECT_AND:
-		case DAG_CONNECT_IMPLY:
-		case DAG_CONNECT_IFF:
-			dag_delete(node->right);
-		case DAG_CONNECT_NOT:
-			dag_delete(node->left);
-		default:
-			break;
-		}
-		node->right = NULL;
-		node->left  = NULL;
-	case DAG_TYPE_CONSTANT:
-	case DAG_TYPE_VARIABLE:
-		free(node);
-	default:
-		return;
-	}
-}
-
-int dag_print_helper(dag_node_t*);
-
 int dag_print_connect(const char* connective, dag_node_t* left, dag_node_t* right) {
 	if (left == NULL || right == NULL) {
 		return 1;
@@ -239,10 +250,4 @@ int dag_print_helper(dag_node_t* node) {
 	default:
 		return 1;
 	}
-}
-
-int dag_print(dag_node_t* node) {
-	if (dag_print_helper(node)) return 1;
-	printf("\n");
-	return 0;
 }
