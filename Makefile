@@ -9,7 +9,7 @@ DAG  = dag.o
 SRCS = main.c dag.c
 OBJS = main.o $(DAG) 
 
-TARGETS = boolean_SAT.out 
+TARGETS = solver.out 
 
 all: ${TARGETS}
 
