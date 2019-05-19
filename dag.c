@@ -12,6 +12,7 @@ dag_node_t* dag_new(int type, int value, struct dag_node_t* left, struct dag_nod
 }
 
 dag_node_t* dag_parse_helper(const char*, int*, int);
+dag_node_t* dag_parse_constant(const char*, int*);
 dag_node_t* dag_parse_variable(const char*, int*);
 dag_node_t* dag_parse_bracket(const char*, int*, int);
 
@@ -58,6 +59,19 @@ int dag_print(dag_node_t* node) {
 }
 
 /***** HELPER FUNCTIONS *****/
+
+dag_node_t* dag_parse_constant(const char* str, int* index) {
+	dag_node_t* node = NULL;
+
+	if (str[*index] == 'T') {
+		node = dag_new(DAG_TYPE_CONSTANT, 1, NULL, NULL);
+	} else if (str[*index] == 'F') {
+		node = dag_new(DAG_TYPE_CONSTANT, 0, NULL, NULL);
+	}
+
+	++*index;
+	return node;
+}
 
 dag_node_t* dag_parse_variable(const char* str, int* index) {
 	dag_node_t* node = NULL;
@@ -160,7 +174,9 @@ dag_node_t* dag_parse_helper(const char* str, int* index, int level) {
 
 		if (negate) ++*index;
 
-		if (str[*index] == 'x') {
+		if (str[*index] == 'T' || str[*index] == 'F') {
+			parsed = dag_parse_constant(str, index);
+		} else if (str[*index] == 'x') {
 			parsed = dag_parse_variable(str, index);
 		} else if (str[*index] == '(') {
 			parsed = dag_parse_bracket(str, index, level + 1);
