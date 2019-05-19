@@ -100,8 +100,15 @@ dag_node_t* dag_parse_helper(const char* str, int* index, int level) {
 				++*index;
 				if (str[*index] == 'x') {
 					left = dag_parse_variable(str, index);
-				} else {
+				} else if (str[*index] == '(') {
+					++*index;
 					left = dag_parse_helper(str, index, level + 1);
+
+					if (str[*index] != ')') {
+						current_state = ERROR;
+					} else {
+						++*index;
+					}
 				}
 
 				if (left == NULL) {
@@ -116,7 +123,14 @@ dag_node_t* dag_parse_helper(const char* str, int* index, int level) {
 				if (str[*index] == 'x') {
 					right = dag_parse_variable(str, index);
 				} else {
+					++*index;
 					right = dag_parse_helper(str, index, level + 1);
+
+					if (str[*index] != ')') {
+						current_state = ERROR;
+					} else {
+						++*index;
+					}
 				}
 
 				if (right == NULL) {
