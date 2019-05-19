@@ -3,7 +3,12 @@
 #include "dag.h"
 
 int main(const int argc, const char** argv) {
-	dag_node_t* dag = dag_parse("x_1&((x_0)|(x_2))");
+	if (argc != 2) {
+		printf("Usage: %s <boolean formula>\n", argv[0]);
+		return -1;
+	}
+
+	dag_node_t* dag = dag_parse(argv[1]);
 	dag_print(dag);
 	dag_delete(dag);
 

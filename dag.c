@@ -94,13 +94,41 @@ dag_node_t* dag_parse_helper(const char* str, int* index, int level) {
 					current_state = ERROR;
 					break; 
 			}
-		} else if (str[*index] == '!') {
-			if (current_state == PARSE_LEFT) {
-				type = DAG_TYPE_CONNECT;
-				value = DAG_CONNECT_NOT;
-				current_state = PARSE_RIGHT;
-			} else {
+		} else if (str[*index] == '~') {
+			switch (current_state) {
+			case PARSE_LEFT:
+				++*index;
+				if (str[*index] == 'x') {
+					left = dag_parse_variable(str, index);
+				} else {
+					left = dag_parse_helper(str, index, level + 1);
+				}
+
+				if (left == NULL) {
+					current_state = ERROR;
+				} else {
+					left = dag_new(DAG_TYPE_CONNECT, DAG_CONNECT_NOT, left, left);
+					current_state = PARSE_CONNECTIVE;
+				}
+				break;
+			case PARSE_RIGHT:
+				++*index;
+				if (str[*index] == 'x') {
+					right = dag_parse_variable(str, index);
+				} else {
+					right = dag_parse_helper(str, index, level + 1);
+				}
+
+				if (right == NULL) {
+					current_state = ERROR;
+				} else {
+					right = dag_new(DAG_TYPE_CONNECT, DAG_CONNECT_NOT, right, right);
+					current_state = COMPLETE;
+				}
+				break;
+			default:
 				current_state = ERROR;
+				break;
 			}
 		} else if (current_state == PARSE_CONNECTIVE) {
 			current_state = PARSE_RIGHT;
@@ -235,8 +263,10 @@ int dag_print_helper(dag_node_t* node) {
 	case DAG_TYPE_CONNECT:
 		switch (node->value) {
 			case DAG_CONNECT_NOT:
-				printf("!");
-				return dag_print(node->left);
+				printf("~(");
+				int to_return = dag_print_helper(node->left);
+				printf(")");
+				return to_return;
 			case DAG_CONNECT_OR:
 				return dag_print_connect("|", node->left, node->right);
 			case DAG_CONNECT_AND:
