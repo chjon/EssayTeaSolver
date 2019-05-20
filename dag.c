@@ -3,7 +3,7 @@
 #include "connectives.h"
 #include "dag.h"
 
-dag_node_t* dag_new(int type, int value, struct dag_node_t* left, struct dag_node_t* right) {
+dag_node_t* dag_new(int type, int value, dag_node_t* left, dag_node_t* right) {
 	dag_node_t* dag = malloc(sizeof(struct dag_node_t));
 	dag->type  = type;
 	dag->value = value;
@@ -58,6 +58,20 @@ int dag_print(dag_node_t* node) {
 	if (dag_print_helper(node)) return 1;
 	printf("\n");
 	return 0;
+}
+
+int dag_count(dag_node_t* node) {
+	int count = 0;
+	if (node == NULL) {
+		return count;
+	}
+
+	count += dag_count(node->left);
+	if (node->left != node->right) {
+		count += dag_count(node->right);
+	}
+
+	return count + 1;
 }
 
 /***** HELPER FUNCTIONS *****/
