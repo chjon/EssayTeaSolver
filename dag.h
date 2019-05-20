@@ -1,16 +1,20 @@
 #pragma once
 
-/***** DEFINES *****/
+/***** ENUMS *****/
 
-#define DAG_TYPE_CONSTANT 0
-#define DAG_TYPE_VARIABLE 1
-#define DAG_TYPE_CONNECT  2
+enum dag_type {
+	DAG_TYPE_CONSTANT,
+	DAG_TYPE_VARIABLE,
+	DAG_TYPE_CONNECT,
+};
 
-#define DAG_CONNECT_NOT   0
-#define DAG_CONNECT_OR    1
-#define DAG_CONNECT_AND   2
-#define DAG_CONNECT_IMPLY 3
-#define DAG_CONNECT_IFF   4
+enum dag_connect {
+	DAG_CONNECT_NOT,
+	DAG_CONNECT_OR,
+	DAG_CONNECT_AND,
+	DAG_CONNECT_IMPLY,
+	DAG_CONNECT_IFF,
+};
 
 /***** TYPEDEFS *****/
 
