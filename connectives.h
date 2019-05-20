@@ -1,5 +1,9 @@
 /***** SYMBOLS ****/
 
+#define BOOL_LOGIC_SYM_TRUE  "T"
+#define BOOL_LOGIC_SYM_FALSE "F"
+#define BOOL_LOGIC_SYM_VAR   "x_"
+
 #define BOOL_LOGIC_SYM_NOT   "~"
 #define BOOL_LOGIC_SYM_OR    "|"
 #define BOOL_LOGIC_SYM_AND   "&"

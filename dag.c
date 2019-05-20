@@ -65,9 +65,9 @@ int dag_print(dag_node_t* node) {
 dag_node_t* dag_parse_constant(const char* str, int* index) {
 	dag_node_t* node = NULL;
 
-	if (str[*index] == 'T') {
+	if (begins_with(str, *index, BOOL_LOGIC_SYM_TRUE)) {
 		node = dag_new(BOOL_LOGIC_TYPE_CONSTANT, 1, NULL, NULL);
-	} else if (str[*index] == 'F') {
+	} else if (begins_with(str, *index, BOOL_LOGIC_SYM_FALSE)) {
 		node = dag_new(BOOL_LOGIC_TYPE_CONSTANT, 0, NULL, NULL);
 	}
 
@@ -77,12 +77,12 @@ dag_node_t* dag_parse_constant(const char* str, int* index) {
 
 dag_node_t* dag_parse_variable(const char* str, int* index) {
 	dag_node_t* node = NULL;
+	int len = begins_with(str, *index, BOOL_LOGIC_SYM_VAR);
+	*index += len;
 
 	if (
-		str[  *index] == 'x' &&
-		str[++*index] == '_' &&
-		str[++*index] >= '0' &&
-		str[  *index] <= '9'
+		str[*index] >= '0' &&
+		str[*index] <= '9'
 	) {
 		int num = 0;
 		while (str[*index] >= '0' && str[*index] <= '9') {
@@ -168,9 +168,12 @@ dag_node_t* dag_parse_helper(const char* str, int* index, int level) {
 
 		if (negate) ++*index;
 
-		if (str[*index] == 'T' || str[*index] == 'F') {
+		if (
+			begins_with(str, *index, BOOL_LOGIC_SYM_TRUE ) ||
+			begins_with(str, *index, BOOL_LOGIC_SYM_FALSE)
+		) {
 			parsed = dag_parse_constant(str, index);
-		} else if (str[*index] == 'x') {
+		} else if (begins_with(str, *index, BOOL_LOGIC_SYM_VAR)) {
 			parsed = dag_parse_variable(str, index);
 		} else if (str[*index] == '(') {
 			parsed = dag_parse_bracket(str, index, level + 1);
@@ -231,13 +234,13 @@ int dag_print_helper(dag_node_t* node) {
 	switch (node->type) {
 	case BOOL_LOGIC_TYPE_CONSTANT:
 		if (node->value) {
-			printf("T");
+			printf(BOOL_LOGIC_SYM_TRUE);
 		} else {
-			printf("F");
+			printf(BOOL_LOGIC_SYM_FALSE);
 		}
 		return 0;
 	case BOOL_LOGIC_TYPE_VARIABLE:
-		printf("x_%d", node->value);
+		printf("%s%d", BOOL_LOGIC_SYM_VAR, node->value);
 		return 0;
 	case BOOL_LOGIC_TYPE_CONNECT:
 		switch (node->value) {
