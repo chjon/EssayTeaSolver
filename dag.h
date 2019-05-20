@@ -1,21 +1,5 @@
 #pragma once
 
-/***** ENUMS *****/
-
-enum dag_type {
-	DAG_TYPE_CONSTANT,
-	DAG_TYPE_VARIABLE,
-	DAG_TYPE_CONNECT,
-};
-
-enum dag_connect {
-	DAG_CONNECT_NOT,
-	DAG_CONNECT_OR,
-	DAG_CONNECT_AND,
-	DAG_CONNECT_IMPLY,
-	DAG_CONNECT_IFF,
-};
-
 /***** TYPEDEFS *****/
 
 typedef struct dag_node_t {

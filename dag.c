@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "connectives.h"
 #include "dag.h"
 
 dag_node_t* dag_new(int type, int value, struct dag_node_t* left, struct dag_node_t* right) {
@@ -15,6 +16,7 @@ dag_node_t* dag_parse_helper(const char*, int*, int);
 dag_node_t* dag_parse_constant(const char*, int*);
 dag_node_t* dag_parse_variable(const char*, int*);
 dag_node_t* dag_parse_bracket(const char*, int*, int);
+int begins_with(const char*, int, const char*);
 
 dag_node_t* dag_parse(const char* str) {
 	int index = 0;
@@ -27,22 +29,22 @@ void dag_delete(dag_node_t* node) {
 	}
 
 	switch (node->type) {
-	case DAG_TYPE_CONNECT:
+	case BOOL_LOGIC_TYPE_CONNECT:
 		switch (node->value) {
-		case DAG_CONNECT_OR:
-		case DAG_CONNECT_AND:
-		case DAG_CONNECT_IMPLY:
-		case DAG_CONNECT_IFF:
+		case BOOL_LOGIC_CONN_OR:
+		case BOOL_LOGIC_CONN_AND:
+		case BOOL_LOGIC_CONN_IMPLY:
+		case BOOL_LOGIC_CONN_IFF:
 			dag_delete(node->right);
-		case DAG_CONNECT_NOT:
+		case BOOL_LOGIC_CONN_NOT:
 			dag_delete(node->left);
 		default:
 			break;
 		}
 		node->right = NULL;
 		node->left  = NULL;
-	case DAG_TYPE_CONSTANT:
-	case DAG_TYPE_VARIABLE:
+	case BOOL_LOGIC_TYPE_CONSTANT:
+	case BOOL_LOGIC_TYPE_VARIABLE:
 		free(node);
 	default:
 		return;
@@ -64,9 +66,9 @@ dag_node_t* dag_parse_constant(const char* str, int* index) {
 	dag_node_t* node = NULL;
 
 	if (str[*index] == 'T') {
-		node = dag_new(DAG_TYPE_CONSTANT, 1, NULL, NULL);
+		node = dag_new(BOOL_LOGIC_TYPE_CONSTANT, 1, NULL, NULL);
 	} else if (str[*index] == 'F') {
-		node = dag_new(DAG_TYPE_CONSTANT, 0, NULL, NULL);
+		node = dag_new(BOOL_LOGIC_TYPE_CONSTANT, 0, NULL, NULL);
 	}
 
 	++*index;
@@ -88,7 +90,7 @@ dag_node_t* dag_parse_variable(const char* str, int* index) {
 			num += str[*index] - '0';
 			++*index;
 		}
-		node = dag_new(DAG_TYPE_VARIABLE, num, NULL, NULL);
+		node = dag_new(BOOL_LOGIC_TYPE_VARIABLE, num, NULL, NULL);
 	}
 
 	return node;
@@ -108,6 +110,15 @@ dag_node_t* dag_parse_bracket(const char* str, int* index, int level) {
 
 	++*index;
 	return parsed;
+}
+
+int begins_with(const char* str, int base, const char* pre) {
+	int i = 0;
+	while (pre[i] && str[base + i] == pre[i]) {
+		++i;
+	}
+
+	return (pre[i]) ? 0 : i;
 }
 
 dag_node_t* dag_parse_helper(const char* str, int* index, int level) {
@@ -130,46 +141,29 @@ dag_node_t* dag_parse_helper(const char* str, int* index, int level) {
 				continue;
 			}
 
-			current_state = PARSE_RIGHT;
-
-			switch (str[*index]) {
-			case '|':
-				type = DAG_TYPE_CONNECT;
-				value = DAG_CONNECT_OR;
-				break;
-			case '&':
-				type = DAG_TYPE_CONNECT;
-				value = DAG_CONNECT_AND;
-				break;
-			case '-':
-				if (str[++*index] == '>') {
-					type = DAG_TYPE_CONNECT;
-					value = DAG_CONNECT_IMPLY;
-				} else {
-					current_state = ERROR;
-				}
-				break;
-			case '<':
-				if (
-					str[++*index] == '-' &&
-					str[++*index] == '>'
-				) {
-					type = DAG_TYPE_CONNECT;
-					value = DAG_CONNECT_IFF;
-				} else {
-					current_state = ERROR;
-				}
-				break;
-			default:
-				current_state = ERROR;
-				break;
+			int len = 0;
+			if ((len = begins_with(str, *index, BOOL_LOGIC_SYM_OR))) {
+				value = BOOL_LOGIC_CONN_OR;
+			} else if ((len = begins_with(str, *index, BOOL_LOGIC_SYM_AND))) {
+				value = BOOL_LOGIC_CONN_AND;
+			} else if ((len = begins_with(str, *index, BOOL_LOGIC_SYM_IMPLY))) {
+				value = BOOL_LOGIC_CONN_IMPLY;
+			} else if ((len = begins_with(str, *index, BOOL_LOGIC_SYM_IFF))) {
+				value = BOOL_LOGIC_CONN_IFF;
 			}
 
-			++*index;
+			if (value == -1) {
+				current_state = ERROR;
+			}
+
+			*index += len;
+			current_state = PARSE_RIGHT;
+			type = BOOL_LOGIC_TYPE_CONNECT;
+
 			continue;
 		}
 		
-		int negate = (str[*index] == '~');
+		int negate = (begins_with(str, *index, BOOL_LOGIC_SYM_NOT));
 		parsed = NULL;
 
 		if (negate) ++*index;
@@ -188,7 +182,7 @@ dag_node_t* dag_parse_helper(const char* str, int* index, int level) {
 		}
 
 		if (negate) {
-			parsed = dag_new(DAG_TYPE_CONNECT, DAG_CONNECT_NOT, parsed, parsed);
+			parsed = dag_new(BOOL_LOGIC_TYPE_CONNECT, BOOL_LOGIC_CONN_NOT, parsed, parsed);
 		}
 
 		if (current_state == PARSE_LEFT) {
@@ -235,31 +229,31 @@ int dag_print_helper(dag_node_t* node) {
 	}
 
 	switch (node->type) {
-	case DAG_TYPE_CONSTANT:
+	case BOOL_LOGIC_TYPE_CONSTANT:
 		if (node->value) {
 			printf("T");
 		} else {
 			printf("F");
 		}
 		return 0;
-	case DAG_TYPE_VARIABLE:
+	case BOOL_LOGIC_TYPE_VARIABLE:
 		printf("x_%d", node->value);
 		return 0;
-	case DAG_TYPE_CONNECT:
+	case BOOL_LOGIC_TYPE_CONNECT:
 		switch (node->value) {
-			case DAG_CONNECT_NOT:
-				printf("~(");
+			case BOOL_LOGIC_CONN_NOT:
+				printf("%s(", BOOL_LOGIC_SYM_NOT);
 				int to_return = dag_print_helper(node->left);
 				printf(")");
 				return to_return;
-			case DAG_CONNECT_OR:
-				return dag_print_connect("|", node->left, node->right);
-			case DAG_CONNECT_AND:
-				return dag_print_connect("&", node->left, node->right);
-			case DAG_CONNECT_IMPLY:
-				return dag_print_connect("->", node->left, node->right);
-			case DAG_CONNECT_IFF:
-				return dag_print_connect("<->", node->left, node->right);
+			case BOOL_LOGIC_CONN_OR:
+				return dag_print_connect(BOOL_LOGIC_SYM_OR, node->left, node->right);
+			case BOOL_LOGIC_CONN_AND:
+				return dag_print_connect(BOOL_LOGIC_SYM_AND, node->left, node->right);
+			case BOOL_LOGIC_CONN_IMPLY:
+				return dag_print_connect(BOOL_LOGIC_SYM_IMPLY, node->left, node->right);
+			case BOOL_LOGIC_CONN_IFF:
+				return dag_print_connect(BOOL_LOGIC_SYM_IFF, node->left, node->right);
 			default:
 				return 1;
 		}
