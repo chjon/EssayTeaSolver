@@ -30,6 +30,7 @@ void dag_delete(dag_node_t* node) {
 
 	switch (node->type) {
 	case BOOL_LOGIC_TYPE_CONNECT:
+		node->type = -1;
 		switch (node->value) {
 		case BOOL_LOGIC_CONN_OR:
 		case BOOL_LOGIC_CONN_AND:
@@ -45,6 +46,7 @@ void dag_delete(dag_node_t* node) {
 		node->left  = NULL;
 	case BOOL_LOGIC_TYPE_CONSTANT:
 	case BOOL_LOGIC_TYPE_VARIABLE:
+		node->type = -1;
 		free(node);
 	default:
 		return;

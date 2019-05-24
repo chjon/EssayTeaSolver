@@ -5,9 +5,8 @@ CFLAGS  = -Wall -g -std=c99
 LDFLAGS = -g
 LDLIBS  = -lz
 
-DAG  = dag.o
-SRCS = main.c dag.c
-OBJS = main.o $(DAG) 
+SRCS = main.c dag.c nf.c
+OBJS = main.o dag.o nf.o
 
 TARGETS = solver.out 
 
