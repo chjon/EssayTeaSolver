@@ -6,11 +6,12 @@
 class CNF_Clause {
 	private:
 		std::unordered_set<int>* vars;
-		friend class CNF_Formula;
 
-	public:
 		CNF_Clause(std::unordered_set<int>*);
 		~CNF_Clause(void);
+
+		friend class CNF_Formula;
+	public:
 
 		unsigned int size(void);
 		bool isUnit(void);

@@ -28,5 +28,6 @@ int main(const int argc, const char** argv) {
 		return error;
 	}
 
+	delete formula;
 	return 0;
 }
