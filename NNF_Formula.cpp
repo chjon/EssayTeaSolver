@@ -1,17 +1,22 @@
 #include "NNF_Formula.h"
 #include <errno.h>
 #include <fstream>
+#include <sstream>
 
 /***** CONSTRUCTORS *****/
 
 NNF_Formula::NNF_Formula(int var) {
-	this->var  = var;
-	this->conn = NNF_NONE;
+	this->var   = var;
+	this->conn  = 0;
+	this->left  = NULL;
+	this->right = NULL;
 }
 
-NNF_Formula::NNF_Formula(NNF_Connective conn) {
-	this->var  = 0;
-	this->conn = conn;
+NNF_Formula::NNF_Formula(char conn, NNF_Formula* left, NNF_Formula* right) {
+	this->var   = 0;
+	this->conn  = conn;
+	this->left  = left;
+	this->right = right;
 }
 
 NNF_Formula::~NNF_Formula(void) {
@@ -36,40 +41,79 @@ bool NNF_Formula::shouldPop(std::stack<char>* outputStack, char curr) {
 	return (curr == '+' && top == '+') || (top == '.');
 }
 
+bool NNF_Formula::isOperator(char candidate) {
+	return candidate == NNF_OR || candidate == NNF_AND;
+}
+
+bool NNF_Formula::isDigit(char candidate) {
+	return candidate >= '0' && candidate <= '9';
+}
+
+bool NNF_Formula::isWhitespace(char candidate) {
+	return
+		candidate == ' '  ||
+		candidate == '\t' ||
+		candidate == '\r' ||
+		candidate == '\n';
+}
+
+std::string NNF_Formula::reversePolishErrorMessage(int errcode) {
+	std::string errMsg = "Error while parsing input: ";
+	switch (errcode) {
+		case -1:
+			errMsg += "Misplaced negation";
+			return errMsg;
+		case -2:
+			errMsg += "Missing operand";
+			return errMsg;
+		case -3:
+			errMsg += "Misplaced parenthesis";
+			return errMsg;
+		case -4:
+			errMsg +=  "Unbalanced parentheses";
+			return errMsg;
+		case -5:
+			errMsg += "Invalid token";
+			return errMsg;
+		default:
+			return errMsg;
+	}
+}
+
 int NNF_Formula::toReversePolish(std::string* output, std::string input) {
 	*output = "";
 	std::stack<char> operatorStack;
 
-	char prev = 0;
+	char prev = NNF_NONE;
 	for (unsigned int i = 0; i < input.length(); i++) {
 		char curr = input[i];
-		if (curr >= '0' && curr <= '9') {
-			if (prev == '+' || prev == '.') {
-				output->push_back(',');
+		if (isDigit(curr)) {
+			if (isOperator(prev)) {
+				output->push_back(NNF_REVERSE_POLISH_SEPARATOR);
 			}
 
 			output->push_back(curr);
 			prev = curr;
-		} else if (curr == '-') {
-			if (prev == '+' || prev == '.') {
-				output->push_back(',');
+		} else if (curr == NNF_NOT) {
+			if (isOperator(prev)) {
+				output->push_back(NNF_REVERSE_POLISH_SEPARATOR);
 			}
 
-			if (prev == 0 || prev == '+' || prev == '.') {
+			if (prev == NNF_NONE || isOperator(prev)) {
 				output->push_back(curr);
 				prev = curr;
 			} else {
 				errno = -1;
 				return errno;
 			}
-		} else if (curr == '+' || curr == '.') {
-			if (prev == 0 || prev == '-' || prev == '+' || prev == '.') {
+		} else if (isOperator(curr)) {
+			if (prev == NNF_NONE || prev == NNF_NOT || isOperator(prev)) {
 				errno = -2;
 				return errno;
 			}
 
 			while (shouldPop(&operatorStack, curr)) {
-				output->push_back(',');
+				output->push_back(NNF_REVERSE_POLISH_SEPARATOR);
 				output->push_back(operatorStack.top());
 				operatorStack.pop();
 			}
@@ -77,14 +121,14 @@ int NNF_Formula::toReversePolish(std::string* output, std::string input) {
 			operatorStack.push(curr);
 			prev = curr;
 		} else if (curr == '(') {
-			if (prev >= '0' && prev <= '9') {
+			if (isDigit(prev)) {
 				errno = -3;
 				return errno;
 			}
 			operatorStack.push(curr);
 		} else if (curr == ')') {
 			while (operatorStack.size() && operatorStack.top() != '(') {
-				output->push_back(',');
+				output->push_back(NNF_REVERSE_POLISH_SEPARATOR);
 				output->push_back(operatorStack.top());
 				operatorStack.pop();
 			}
@@ -95,13 +139,13 @@ int NNF_Formula::toReversePolish(std::string* output, std::string input) {
 			} else {
 				operatorStack.pop();
 			}
-		} else if (curr != ' ' && curr != '\t' && curr != '\n' && curr != '\r') {
+		} else if (!isWhitespace(curr)) {
 			errno = -5;
 			return errno;
 		}
 	}
 
-	if (prev == '-' || prev == '+' || prev == '.') {
+	if (prev == NNF_NOT || isOperator(prev)) {
 		errno = -2;
 		return errno;
 	}
@@ -112,7 +156,7 @@ int NNF_Formula::toReversePolish(std::string* output, std::string input) {
 			return errno;
 		}
 
-		output->push_back(',');
+		output->push_back(NNF_REVERSE_POLISH_SEPARATOR);
 		output->push_back(operatorStack.top());
 		operatorStack.pop();
 	}
@@ -139,34 +183,37 @@ int NNF_Formula::parseFile(NNF_Formula** formula, std::string pathname) {
 	/* Convert to reverse Polish notation */
 	std::string reversePolish;
 	if (toReversePolish(&reversePolish, line)) {
-
+		errno = -2;
+		return errno;
 	}
+
+	/* Generate NNF structure */
+	std::stack<NNF_Formula*> formulaStack;
+	std::istringstream stream(reversePolish);
+	while (!stream.eof()) {
+		char next = stream.peek();
+		int var;
+		stream >> var;
+		NNF_Formula* node = NULL;
+
+		if (isOperator(next)) {
+			NNF_Formula* right = formulaStack.top();
+			formulaStack.pop();
+			NNF_Formula* left = formulaStack.top();
+			formulaStack.pop();
+			node = new NNF_Formula(next, left, right);
+		} else {
+			node = new NNF_Formula(var);
+		}
+
+		formulaStack.push(node);
+	}
+
+	*formula = formulaStack.top();
+	formulaStack.pop();
 
 	file.close();
 	return 0;
-}
-
-std::string NNF_Formula::reversePolishErrorMessage(int errcode) {
-	std::string errMsg = "Error while parsing input: ";
-	switch (errcode) {
-		case -1:
-			errMsg += "Misplaced negation";
-			return errMsg;
-		case -2:
-			errMsg += "Missing operand";
-			return errMsg;
-		case -3:
-			errMsg += "Misplaced parenthesis";
-			return errMsg;
-		case -4:
-			errMsg +=  "Unbalanced parentheses";
-			return errMsg;
-		case -5:
-			errMsg += "Invalid token";
-			return errMsg;
-		default:
-			return errMsg;
-	}
 }
 
 int NNF_Formula::tseitin(CNF_Formula** formulaCNF, NNF_Formula* formulaNNF) {

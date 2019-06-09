@@ -1,24 +1,28 @@
 #pragma once
 #include <string>
 #include <stack>
+#define NNF_REVERSE_POLISH_SEPARATOR ' '
+#define NNF_AND '.'
+#define NNF_OR  '+'
+#define NNF_NOT '-'
+#define NNF_NONE '\0'
 
 class CNF_Formula;
 
 class NNF_Formula {
 	private:
-		enum NNF_Connective {
-			NNF_AND,
-			NNF_OR,
-			NNF_NONE,
-		};
-
 		int var;
-		NNF_Connective conn;
+		char conn;
+		NNF_Formula* left;
+		NNF_Formula* right;
 
 		NNF_Formula(int);
-		NNF_Formula(NNF_Connective);
+		NNF_Formula(char, NNF_Formula*, NNF_Formula*);
 
 		static bool shouldPop(std::stack<char>*, char);
+		static bool isOperator(char);
+		static bool isDigit(char);
+		static bool isWhitespace(char);
 
 	public:
 		static std::string reversePolishErrorMessage(int);
