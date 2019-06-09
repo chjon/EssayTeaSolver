@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <stack>
-#define NNF_REVERSE_POLISH_SEPARATOR ' '
+#define NNF_SEPARATOR ' '
 #define NNF_AND '.'
 #define NNF_OR  '+'
 #define NNF_NOT '-'

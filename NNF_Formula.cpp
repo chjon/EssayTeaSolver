@@ -1,7 +1,9 @@
 #include "NNF_Formula.h"
 #include <errno.h>
 #include <fstream>
+#include <iostream>
 #include <sstream>
+#include <string>
 
 /***** CONSTRUCTORS *****/
 
@@ -26,8 +28,11 @@ NNF_Formula::~NNF_Formula(void) {
 /***** MEMBER FUNCTIONS *****/
 
 std::string NNF_Formula::toString(void) {
-	std::string s = "";
-	return s;
+	if (isOperator(conn)) {
+		return "(" + left->toString() + ")" + conn + "(" + right->toString() + ")";
+	} else {
+		return std::to_string(var);
+	}
 }
 
 /***** UTILITY FUNCTIONS *****/
@@ -89,14 +94,14 @@ int NNF_Formula::toReversePolish(std::string* output, std::string input) {
 		char curr = input[i];
 		if (isDigit(curr)) {
 			if (isOperator(prev)) {
-				output->push_back(NNF_REVERSE_POLISH_SEPARATOR);
+				output->push_back(NNF_SEPARATOR);
 			}
 
 			output->push_back(curr);
 			prev = curr;
 		} else if (curr == NNF_NOT) {
 			if (isOperator(prev)) {
-				output->push_back(NNF_REVERSE_POLISH_SEPARATOR);
+				output->push_back(NNF_SEPARATOR);
 			}
 
 			if (prev == NNF_NONE || isOperator(prev)) {
@@ -113,7 +118,7 @@ int NNF_Formula::toReversePolish(std::string* output, std::string input) {
 			}
 
 			while (shouldPop(&operatorStack, curr)) {
-				output->push_back(NNF_REVERSE_POLISH_SEPARATOR);
+				output->push_back(NNF_SEPARATOR);
 				output->push_back(operatorStack.top());
 				operatorStack.pop();
 			}
@@ -128,7 +133,7 @@ int NNF_Formula::toReversePolish(std::string* output, std::string input) {
 			operatorStack.push(curr);
 		} else if (curr == ')') {
 			while (operatorStack.size() && operatorStack.top() != '(') {
-				output->push_back(NNF_REVERSE_POLISH_SEPARATOR);
+				output->push_back(NNF_SEPARATOR);
 				output->push_back(operatorStack.top());
 				operatorStack.pop();
 			}
@@ -156,7 +161,7 @@ int NNF_Formula::toReversePolish(std::string* output, std::string input) {
 			return errno;
 		}
 
-		output->push_back(NNF_REVERSE_POLISH_SEPARATOR);
+		output->push_back(NNF_SEPARATOR);
 		output->push_back(operatorStack.top());
 		operatorStack.pop();
 	}
@@ -182,31 +187,38 @@ int NNF_Formula::parseFile(NNF_Formula** formula, std::string pathname) {
 
 	/* Convert to reverse Polish notation */
 	std::string reversePolish;
-	if (toReversePolish(&reversePolish, line)) {
+	if (toReversePolish(&reversePolish, formulaString)) {
+		std::cout << NNF_Formula::reversePolishErrorMessage(errno) << std::endl;
 		errno = -2;
 		return errno;
 	}
 
 	/* Generate NNF structure */
 	std::stack<NNF_Formula*> formulaStack;
-	std::istringstream stream(reversePolish);
-	while (!stream.eof()) {
-		char next = stream.peek();
-		int var;
-		stream >> var;
-		NNF_Formula* node = NULL;
+	bool negative = false;
+	int val = 0;
+	char curr;
+	for (unsigned int i = 0; i < reversePolish.length(); i++) {
+		curr = reversePolish[i];
+		if (curr == NNF_SEPARATOR && val) {
+			if (negative) {
+				val *= -1;
+			}
 
-		if (isOperator(next)) {
+			formulaStack.push(new NNF_Formula(val));
+			negative = false;
+			val = 0;
+		} else if (isDigit(curr)) {
+			val = val * 10 + curr - '0';
+		} else if (curr == NNF_NOT) {
+			negative = true;
+		} else if (isOperator(curr)) {
 			NNF_Formula* right = formulaStack.top();
 			formulaStack.pop();
 			NNF_Formula* left = formulaStack.top();
 			formulaStack.pop();
-			node = new NNF_Formula(next, left, right);
-		} else {
-			node = new NNF_Formula(var);
+			formulaStack.push(new NNF_Formula(curr, left, right));
 		}
-
-		formulaStack.push(node);
 	}
 
 	*formula = formulaStack.top();

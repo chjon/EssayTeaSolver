@@ -5,11 +5,11 @@
 
 int main(const int argc, const char** argv) {
 	if (argc == 2) {
-		std::string reversePolish;
-		if (NNF_Formula::toReversePolish(&reversePolish, argv[1])) {
-			std::cout << NNF_Formula::reversePolishErrorMessage(errno) << std::endl;
+		NNF_Formula* formula;
+		if (NNF_Formula::parseFile(&formula, argv[1])) {
+			std::cout << "Error while parsing file" << std::endl;
 		} else {
-			std::cout << reversePolish << std::endl;
+			std::cout << formula->toString() << std::endl;
 		}
 
 		return errno;
