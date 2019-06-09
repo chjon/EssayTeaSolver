@@ -51,8 +51,11 @@ int NNF_Formula::toReversePolish(std::string* output, std::string input) {
 			output->push_back(curr);
 			prev = curr;
 		} else if (curr == '-') {
-			if (prev == 0 || prev == '+' || prev == '.') {
+			if (prev == '+' || prev == '.') {
 				output->push_back(',');
+			}
+
+			if (prev == 0 || prev == '+' || prev == '.') {
 				output->push_back(curr);
 				prev = curr;
 			} else {
@@ -60,7 +63,7 @@ int NNF_Formula::toReversePolish(std::string* output, std::string input) {
 				return errno;
 			}
 		} else if (curr == '+' || curr == '.') {
-			if (prev == 0 || prev == '+' || prev == '.') {
+			if (prev == 0 || prev == '-' || prev == '+' || prev == '.') {
 				errno = -2;
 				return errno;
 			}
@@ -98,7 +101,7 @@ int NNF_Formula::toReversePolish(std::string* output, std::string input) {
 		}
 	}
 
-	if (prev == '+' || prev == '.') {
+	if (prev == '-' || prev == '+' || prev == '.') {
 		errno = -2;
 		return errno;
 	}
