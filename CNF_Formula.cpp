@@ -5,9 +5,9 @@
 
 /***** CONSTRUCTORS *****/
 
-CNF_Formula::CNF_Formula(std::unordered_set<CNF_Clause*>* clauses) {
-	this->clauses = clauses;
-}
+CNF_Formula::CNF_Formula(std::unordered_set<CNF_Clause*>* clauses) :
+	clauses{clauses}
+{}
 
 CNF_Formula::~CNF_Formula(void) {
 	for (CNF_Clause* clause : *clauses) {

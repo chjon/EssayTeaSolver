@@ -5,9 +5,9 @@
 
 /***** CONSTRUCTORS *****/
 
-CNF_Clause::CNF_Clause(std::unordered_set<int>* vars) {
-	this->vars = vars;
-}
+CNF_Clause::CNF_Clause(std::unordered_set<int>* vars) :
+	vars{vars}
+{}
 
 CNF_Clause::~CNF_Clause(void) {
 	delete vars;

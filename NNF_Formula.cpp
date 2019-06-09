@@ -7,22 +7,27 @@
 
 /***** CONSTRUCTORS *****/
 
-NNF_Formula::NNF_Formula(int var) {
-	this->var   = var;
-	this->conn  = 0;
-	this->left  = NULL;
-	this->right = NULL;
-}
+NNF_Formula::NNF_Formula(int var) :
+	var{var},
+	conn{0},
+	left{NULL},
+	right{NULL},
+	size{1}
+{}
 
-NNF_Formula::NNF_Formula(char conn, NNF_Formula* left, NNF_Formula* right) {
-	this->var   = 0;
-	this->conn  = conn;
-	this->left  = left;
-	this->right = right;
-}
+NNF_Formula::NNF_Formula(char conn, NNF_Formula* left, NNF_Formula* right) :
+	var{0},
+	conn{conn},
+	left{left},
+	right{right},
+	size{1 + left->size + right->size}
+{}
 
 NNF_Formula::~NNF_Formula(void) {
-
+	if (conn) {
+		delete left;
+		delete right;
+	}
 }
 
 /***** MEMBER FUNCTIONS *****/

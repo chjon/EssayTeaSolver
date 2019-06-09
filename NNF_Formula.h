@@ -24,8 +24,6 @@ class NNF_Formula {
 		static bool isDigit(char);
 		static bool isWhitespace(char);
 
-	public:
-		static std::string reversePolishErrorMessage(int);
 		/**
 		 * Converts an input formula to reverse Polish notation
 		 * 
@@ -38,8 +36,11 @@ class NNF_Formula {
 		 *   -5 Invalid token
 		 */
 		static int toReversePolish(std::string*, std::string);
-		~NNF_Formula(void);
+		static std::string reversePolishErrorMessage(int);
+	public:
+		const unsigned int size;
 
+		~NNF_Formula(void);
 		std::string toString(void);
 
 		static int parseFile(NNF_Formula**, std::string);
