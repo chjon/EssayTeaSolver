@@ -16,5 +16,5 @@ class CNF_Clause {
 		bool isUnit(void);
 		void bcp(int);
 		std::string toString(void);
-		static CNF_Clause* parseDimacs(std::string);
+		static int parseDimacs(CNF_Clause**, std::string);
 };

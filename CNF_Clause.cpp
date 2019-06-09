@@ -37,19 +37,21 @@ std::string CNF_Clause::toString(void) {
 
 /***** UTILITY FUNCTIONS *****/
 
-CNF_Clause* CNF_Clause::parseDimacs(const std::string line) {
+int CNF_Clause::parseDimacs(CNF_Clause** clause, const std::string line) {
 	std::unordered_set<int>* vars = new std::unordered_set<int>();
 	std::istringstream stream(line);
 	int var = 0;
+	*clause = NULL;
 
 	while (stream >> var) {
 		if (var == 0) {
-			return new CNF_Clause(vars);
+			*clause = new CNF_Clause(vars);
+			return 0;
 		}
 
 		vars->insert(var);
 	}
 
 	delete vars;
-	return NULL;
+	return -1;
 }

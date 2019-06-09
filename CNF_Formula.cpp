@@ -24,24 +24,47 @@ std::string CNF_Formula::toString(void) {
 
 /***** UTILITY FUNCTIONS *****/
 
-CNF_Formula* CNF_Formula::parseDimacs(const char* pathname) {
-	std::ifstream file;
+int CNF_Formula::generateDimacs(CNF_Formula* formula, std::string pathname) {
+	std::ofstream file;
 	file.open(pathname);
+	if (file.fail()) {
+		return -1;
+	}
+
+	for (CNF_Clause* clause : *formula->clauses) {
+		file << clause->toString() << "0" << std::endl;
+		if (file.fail()) {
+			file.close();
+			return -2;
+		}
+	}
+
+	file.close();
+	return 0;
+}
+
+int CNF_Formula::parseDimacs(CNF_Formula** formula, std::string pathname) {
+	std::ifstream file;
+	*formula = NULL;
+	file.open(pathname);
+	if (file.fail()) {
+		return -1;
+	}
 
 	std::unordered_set<CNF_Clause*>* clauses = new std::unordered_set<CNF_Clause*>();
 	std::string line;
 	while (std::getline(file, line)) {
-		CNF_Clause* clause = CNF_Clause::parseDimacs(line);
-		if (clause == NULL) {
+		CNF_Clause* clause = NULL;
+		if (CNF_Clause::parseDimacs(&clause, line)) {
 			file.close();
 			delete clauses;
-			return NULL;
+			return -2;
 		}
 		clauses->insert(clause);
 	}
 
 	file.close();
 
-	CNF_Formula* formula = new CNF_Formula(clauses);
-	return formula;
+	*formula = new CNF_Formula(clauses);
+	return 0;
 }
