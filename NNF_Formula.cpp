@@ -137,12 +137,36 @@ int NNF_Formula::parseFile(NNF_Formula** formula, std::string pathname) {
 	}
 
 	/* Convert to reverse Polish notation */
-	for (unsigned int i = 0; i < formulaString.length(); i++) {
+	std::string reversePolish;
+	if (toReversePolish(&reversePolish, line)) {
 
 	}
 
 	file.close();
 	return 0;
+}
+
+std::string NNF_Formula::reversePolishErrorMessage(int errcode) {
+	std::string errMsg = "Error while parsing input: ";
+	switch (errcode) {
+		case -1:
+			errMsg += "Misplaced negation";
+			return errMsg;
+		case -2:
+			errMsg += "Missing operand";
+			return errMsg;
+		case -3:
+			errMsg += "Misplaced parenthesis";
+			return errMsg;
+		case -4:
+			errMsg +=  "Unbalanced parentheses";
+			return errMsg;
+		case -5:
+			errMsg += "Invalid token";
+			return errMsg;
+		default:
+			return errMsg;
+	}
 }
 
 int NNF_Formula::tseitin(CNF_Formula** formulaCNF, NNF_Formula* formulaNNF) {

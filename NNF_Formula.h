@@ -21,15 +21,17 @@ class NNF_Formula {
 		static bool shouldPop(std::stack<char>*, char);
 
 	public:
+		static std::string reversePolishErrorMessage(int);
 		/**
 		 * Converts an input formula to reverse Polish notation
 		 * 
 		 * @returns
 		 *    0 Success
-		 *   -1 misplaced negation
-		 *   -2 missing operand
-		 *   -3 misplaced parenthesis
-		 *   -4 unbalanced parentheses
+		 *   -1 Misplaced negation
+		 *   -2 Missing operand
+		 *   -3 Misplaced parenthesis
+		 *   -4 Unbalanced parentheses
+		 *   -5 Invalid token
 		 */
 		static int toReversePolish(std::string*, std::string);
 		~NNF_Formula(void);
