@@ -10,17 +10,17 @@
 NNF_Formula::NNF_Formula(int var) :
 	var{var},
 	conn{0},
+	size{1},
 	left{NULL},
-	right{NULL},
-	size{1}
+	right{NULL}
 {}
 
 NNF_Formula::NNF_Formula(char conn, NNF_Formula* left, NNF_Formula* right) :
 	var{0},
 	conn{conn},
+	size{1 + left->size + right->size},
 	left{left},
-	right{right},
-	size{1 + left->size + right->size}
+	right{right}
 {}
 
 NNF_Formula::~NNF_Formula(void) {

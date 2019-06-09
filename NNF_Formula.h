@@ -13,6 +13,7 @@ class NNF_Formula {
 	private:
 		int var;
 		char conn;
+		const unsigned int size;
 		NNF_Formula* left;
 		NNF_Formula* right;
 
@@ -38,8 +39,6 @@ class NNF_Formula {
 		static int toReversePolish(std::string*, std::string);
 		static std::string reversePolishErrorMessage(int);
 	public:
-		const unsigned int size;
-
 		~NNF_Formula(void);
 		std::string toString(void);
 
