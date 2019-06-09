@@ -1,4 +1,5 @@
 #include "CNF_Formula.h"
+#include <errno.h>
 #include <fstream>
 #include <string>
 
@@ -32,14 +33,16 @@ int CNF_Formula::generateDimacs(CNF_Formula* formula, std::string pathname) {
 	std::ofstream file;
 	file.open(pathname);
 	if (file.fail()) {
-		return -1;
+		errno = -1;
+		return errno;
 	}
 
 	for (CNF_Clause* clause : *formula->clauses) {
 		file << clause->toString() << "0" << std::endl;
 		if (file.fail()) {
 			file.close();
-			return -2;
+			errno = -2;
+			return errno;
 		}
 	}
 
@@ -52,7 +55,8 @@ int CNF_Formula::parseDimacs(CNF_Formula** formula, std::string pathname) {
 	*formula = NULL;
 	file.open(pathname);
 	if (file.fail()) {
-		return -1;
+		errno = -1;
+		return errno;
 	}
 
 	std::unordered_set<CNF_Clause*>* clauses = new std::unordered_set<CNF_Clause*>();
@@ -62,7 +66,8 @@ int CNF_Formula::parseDimacs(CNF_Formula** formula, std::string pathname) {
 		if (CNF_Clause::parseDimacs(&clause, line)) {
 			file.close();
 			delete clauses;
-			return -2;
+			errno = -2;
+			return errno;
 		}
 		clauses->insert(clause);
 	}
