@@ -23,4 +23,4 @@ NNF_to_CNF: NNF_to_CNF.o $(OBJS)
 
 .PHONY: clean
 clean:
-	rm -f all.png *.d *.o $(TARGETS) 
+	rm -f *.d *.o $(TARGETS) 
