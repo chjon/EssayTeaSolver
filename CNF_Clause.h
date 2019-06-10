@@ -14,8 +14,8 @@ class CNF_Clause {
 		
 		friend class CNF_Formula;
 		friend class NNF_Formula;
-	public:
 
+	public:
 		unsigned int size(void);
 		bool isUnit(void);
 		void bcp(int);

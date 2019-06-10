@@ -300,7 +300,8 @@ int NNF_Formula::tseitinHelper(NNF_Formula* formulaNNF, int* index, CNF_Formula*
 		clauses->insert(new CNF_Clause(vars));
 	}
 
-	subformulae[*index] = new CNF_Formula(clauses);
+	/* Indexing from 1 */
+	subformulae[*index - 1] = new CNF_Formula(clauses);
 	++*index;
 
 	return 0;
@@ -308,17 +309,20 @@ int NNF_Formula::tseitinHelper(NNF_Formula* formulaNNF, int* index, CNF_Formula*
 
 int NNF_Formula::tseitinTransform(CNF_Formula** formulaCNF, NNF_Formula* formulaNNF) {
 	*formulaCNF = NULL;
-	int index = 0;
+	int index = 1;
 	CNF_Formula** subformulae = new CNF_Formula*[formulaNNF->size];
 	if (tseitinHelper(formulaNNF, &index, subformulae)) {
 		delete[] subformulae;
-		return -1;
+		errno = -1;
+		return errno;
 	}
 
 	if (CNF_Formula::combine(formulaCNF, subformulae, formulaNNF->size)) {
 		delete[] subformulae;
-		return -2;
+		errno = -2;
+		return errno;
 	}
 
+	delete[] subformulae;
 	return 0;
 }

@@ -4,51 +4,36 @@
 #include "NNF_Formula.h"
 
 int main(const int argc, const char** argv) {
-	if (argc == 2) {
-		NNF_Formula* formula;
-		if (NNF_Formula::parseFile(&formula, argv[1])) {
-			std::cout << "Error while parsing file" << std::endl;
-		} else {
-			std::cout << formula->toString() << std::endl;
-		}
-
-		return errno;
-	}
-
 	if (argc != 3) {
-		std::cout << "Usage: " << argv[0] << " <input_file> <output_file>" << std::endl;
+		std::cout << "Usage: " << argv[0] << " <nnf_input_file> <cnf_output_file>" << std::endl;
 		return 1;
 	}
 
-	CNF_Formula* formula;
-	if (CNF_Formula::parseDimacs(&formula, argv[1])) {
+	NNF_Formula* formulaNNF;
+	if (NNF_Formula::parseFile(&formulaNNF, argv[1])) {
+		return errno;
+	}
+
+	CNF_Formula* formulaCNF;
+	if (NNF_Formula::tseitinTransform(&formulaCNF, formulaNNF)) {
+		std::cout << "Error while performing Tseitin's Transformation" << std::endl;
+		return errno;
+	}
+
+	if (CNF_Formula::generateDimacs(formulaCNF, argv[2])) {
 		switch (errno) {
 			case -1:
-				std::cerr << "Error while opening file" << std::endl;
+				std::cerr << "Error while opening file: " << argv[2] << std::endl;
 				return errno;
 			case -2:
-				std::cerr << "Error while parsing input" << std::endl;
+				std::cerr << "Error while writing to file" << argv[2] << std::endl;
 				return errno;
 			default:
 				return errno;
 		}
 	}
 
-	std::cout << formula->toString() << std::endl;
-
-	if (CNF_Formula::generateDimacs(formula, argv[2])) {
-		switch (errno) {
-			case -1:
-				std::cerr << "Error while opening file" << std::endl;
-				return errno;
-			case -2:
-				std::cerr << "Error while writing to file" << std::endl;
-				return errno;
-			default:
-				return errno;
-		}
-	}
-
-	delete formula;
+	delete formulaNNF;
+	delete formulaCNF;
 	return 0;
 }
