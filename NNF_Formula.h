@@ -19,7 +19,6 @@ class NNF_Formula {
 		NNF_Formula* right;
 		std::string stringRep;
 		int invariant;
-		int index;
 
 		NNF_Formula(int);
 		NNF_Formula(char, NNF_Formula*, NNF_Formula*);
@@ -43,12 +42,16 @@ class NNF_Formula {
 		static int toReversePolish(std::string*, std::string);
 		static std::string reversePolishErrorMessage(int);
 		
-		static CNF_Formula* generateLocalCNF(NNF_Formula*);
+		static CNF_Formula* generateLocalCNF(
+			NNF_Formula*,
+			std::unordered_map<std::string, int>*
+		);
 		
 		static int reduceRedundancies(
 			NNF_Formula*,
 			std::unordered_map<std::string, NNF_Formula*>*,
-			int*
+			int*,
+			std::unordered_map<std::string, int>*
 		);
 
 	public:
