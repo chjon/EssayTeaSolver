@@ -17,7 +17,8 @@ NNF_Formula::NNF_Formula(int var) :
 	left{NULL},
 	right{NULL},
 	stringRep{std::to_string(var)},
-	invariant{NNF_INVARIANT}
+	invariant{NNF_INVARIANT},
+	index{0}
 {}
 
 NNF_Formula::NNF_Formula(char conn, NNF_Formula* left, NNF_Formula* right) :
@@ -26,7 +27,8 @@ NNF_Formula::NNF_Formula(char conn, NNF_Formula* left, NNF_Formula* right) :
 	size{1 + left->size + right->size},
 	left{NULL},
 	right{NULL},
-	invariant{NNF_INVARIANT}
+	invariant{NNF_INVARIANT},
+	index{0}
 {
 	if (right->stringRep.compare(left->stringRep) < 0) {
 		NNF_Formula* tmp = left;
@@ -255,90 +257,124 @@ int NNF_Formula::parseFile(NNF_Formula** formula, std::string pathname) {
 	return 0;
 }
 
-int NNF_Formula::tseitinHelper(NNF_Formula* formulaNNF, int* index, CNF_Formula** subformulae) {
+int NNF_Formula::reduceRedundancies(
+	NNF_Formula* formula,
+	std::unordered_map<std::string, NNF_Formula*>* formulaMap,
+	int* index
+) {
+	if (isOperator(formula->conn)) {
+		std::unordered_map<std::string, NNF_Formula*>::iterator found =
+			formulaMap->find(formula->left->stringRep);
+		if (found != formulaMap->end()) {
+			delete formula->left;
+			formula->left = found->second;
+		} else {
+			reduceRedundancies(formula->left, formulaMap, index);
+		}
+
+		found = formulaMap->find(formula->right->stringRep);
+		if (found != formulaMap->end()) {
+			delete formula->right;
+			formula->right = found->second;
+		} else {
+			reduceRedundancies(formula->right, formulaMap, index);
+		}
+	}
+
+	formulaMap->insert(std::pair<std::string, NNF_Formula*>(formula->stringRep, formula));
+	formula->index = *index;
+	++*index;
+	return 0;
+}
+
+CNF_Formula* NNF_Formula::generateLocalCNF(NNF_Formula* formulaNNF) {
 	std::unordered_set<CNF_Clause*>* clauses = new std::unordered_set<CNF_Clause*>();
 	std::unordered_set<int>* vars;
 
 	if (isOperator(formulaNNF->conn)) {
-		int leftIndex;
-		int rightIndex;
+		int index      = 1 + formulaNNF->index;
+		int leftIndex  = 1 + formulaNNF->left->index;
+		int rightIndex = 1 + formulaNNF->right->index;
 
-		if (tseitinHelper(formulaNNF->left, index, subformulae)) {
-			return -1;
-		} else {
-			leftIndex = *index - 1;
-		}
-
-		if (tseitinHelper(formulaNNF->right, index, subformulae)) {
-			return -1;
-		} else {
-			rightIndex = *index - 1;
-		}
-
-		/* Insert local CNF equivalents */
 		if (formulaNNF->conn == NNF_OR) {
 			vars = new std::unordered_set<int>();
-			vars->insert(*index);
+			vars->insert(index);
 			vars->insert(-leftIndex);
 			clauses->insert(new CNF_Clause(vars));
 			
 			vars = new std::unordered_set<int>();
-			vars->insert(*index);
+			vars->insert(index);
 			vars->insert(-rightIndex);
 			clauses->insert(new CNF_Clause(vars));
 
 			vars = new std::unordered_set<int>();
-			vars->insert(-*index);
+			vars->insert(-index);
 			vars->insert(leftIndex);
 			vars->insert(rightIndex);
 			clauses->insert(new CNF_Clause(vars));
 
 		} else if (formulaNNF->conn == NNF_AND) {
 			vars = new std::unordered_set<int>();
-			vars->insert(-*index);
+			vars->insert(-index);
 			vars->insert(leftIndex);
 			clauses->insert(new CNF_Clause(vars));
 
 			vars = new std::unordered_set<int>();
-			vars->insert(-*index);
+			vars->insert(-index);
 			vars->insert(rightIndex);
 			clauses->insert(new CNF_Clause(vars));
 
 			vars = new std::unordered_set<int>();
-			vars->insert(*index);
+			vars->insert(index);
 			vars->insert(-leftIndex);
 			vars->insert(-rightIndex);
 			clauses->insert(new CNF_Clause(vars));
 		} else {
 			delete clauses;
-			return -1;
+			return NULL;
 		}
 	} else {
+		int index = formulaNNF->index + 1;
 		vars = new std::unordered_set<int>();
-		vars->insert((formulaNNF->var < 0) ? (-*index) : *index);
+		vars->insert((formulaNNF->var < 0) ? (-index) : index);
 		clauses->insert(new CNF_Clause(vars));
 	}
 
-	/* Indexing from 1 */
-	subformulae[*index - 1] = new CNF_Formula(clauses);
-	++*index;
-
-	return 0;
+	return new CNF_Formula(clauses);
 }
 
 int NNF_Formula::tseitinTransform(CNF_Formula** formulaCNF, NNF_Formula* formulaNNF) {
 	*formulaCNF = NULL;
-	int index = 1;
-	CNF_Formula** subformulae = new CNF_Formula*[formulaNNF->size];
-	if (tseitinHelper(formulaNNF, &index, subformulae)) {
-		delete[] subformulae;
+	std::unordered_map<std::string, NNF_Formula*>* formulaMap;
+	formulaMap = new std::unordered_map<std::string, NNF_Formula*>();
+
+	/* Minimize redundant nodes */
+	int index = 0;
+	if (reduceRedundancies(formulaNNF, formulaMap, &index)) {
+		delete formulaMap;
 		errno = -1;
-		return errno;
+		return -1;
 	}
 
-	if (CNF_Formula::combine(formulaCNF, subformulae, formulaNNF->size)) {
+	/* Generate local CNF formulae */
+	CNF_Formula** subformulae = new CNF_Formula*[index];
+	for (
+		std::unordered_map<std::string, NNF_Formula*>::iterator i = formulaMap->begin();
+		i != formulaMap->end();
+		++i
+	) {
+		NNF_Formula* subformula = i->second;
+		subformulae[subformula->index] = generateLocalCNF(subformula);
+		if (subformulae[subformula->index] == NULL) {
+			delete[] subformulae;
+			errno = -2;
+			return errno;
+		}
+	}
+
+	if (CNF_Formula::combine(formulaCNF, subformulae, index)) {
 		delete[] subformulae;
-		errno = -2;
+		errno = -3;
 		return errno;
 	}
 
