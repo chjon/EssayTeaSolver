@@ -5,12 +5,12 @@ CFLAGS  = -Wall -g -std=c++14
 LDFLAGS = -g
 LDLIBS  = -lz
 
-SRCS = main.cpp CNF_Clause.cpp CNF_Formula.cpp NNF_Formula.cpp
-OBJS = main.o   CNF_Clause.o   CNF_Formula.o   NNF_Formula.o
+SRCS = NNF_to_CNF.cpp CNF_Clause.cpp CNF_Formula.cpp NNF_Formula.cpp
+OBJS = CNF_Clause.o CNF_Formula.o NNF_Formula.o
 
-TARGETS = solver.out 
+TARGETS = NNF_to_CNF 
 
-solver.out: $(OBJS) 
+NNF_to_CNF: NNF_to_CNF.o $(OBJS) 
 	$(LD) -o $@ $^ $(LDLIBS) $(LDFLAGS) 
 
 %.o: %.cpp
