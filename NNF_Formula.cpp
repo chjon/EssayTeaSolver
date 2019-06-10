@@ -368,7 +368,7 @@ int NNF_Formula::tseitinTransform(CNF_Formula** formulaCNF, NNF_Formula* formula
 	}
 
 	/* Generate local CNF formulae */
-	CNF_Formula** subformulae = new CNF_Formula*[indexMap->size()];
+	CNF_Formula** subformulae = new CNF_Formula*[indexMap->size() + 1];
 	index = 0;
 	for (
 		std::unordered_map<std::string, NNF_Formula*>::iterator i = formulaMap->begin();
@@ -378,6 +378,14 @@ int NNF_Formula::tseitinTransform(CNF_Formula** formulaCNF, NNF_Formula* formula
 		NNF_Formula* subformula = i->second;
 		subformulae[index] = generateLocalCNF(subformula, indexMap);
 	}
+
+	/* Generate CNF formula for top level */
+	std::unordered_set<int>* vars = new std::unordered_set<int>();
+	vars->insert(indexMap->find(formulaNNF->stringRep)->second);
+	std::unordered_set<CNF_Clause*>* clauses = new std::unordered_set<CNF_Clause*>();
+	clauses->insert(new CNF_Clause(vars));
+	subformulae[index] = new CNF_Formula(clauses);
+	++index;
 
 	if (CNF_Formula::combine(formulaCNF, subformulae, index)) {
 		delete[] subformulae;
