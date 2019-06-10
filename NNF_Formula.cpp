@@ -247,13 +247,13 @@ int NNF_Formula::tseitinHelper(NNF_Formula* formulaNNF, int* index, CNF_Formula*
 		if (tseitinHelper(formulaNNF->left, index, subformulae)) {
 			return -1;
 		} else {
-			leftIndex = *index;
+			leftIndex = *index - 1;
 		}
 
 		if (tseitinHelper(formulaNNF->right, index, subformulae)) {
 			return -1;
 		} else {
-			rightIndex = *index;
+			rightIndex = *index - 1;
 		}
 
 		/* Insert local CNF equivalents */
