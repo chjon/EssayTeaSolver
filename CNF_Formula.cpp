@@ -82,6 +82,10 @@ int CNF_Formula::combine(CNF_Formula** formula, CNF_Formula** subformulae, unsig
 	std::unordered_set<CNF_Clause*>* clauses = new std::unordered_set<CNF_Clause*>();
 	for (unsigned int i = 0; i < size; ++i) {
 		CNF_Formula* subformula = subformulae[i];
+		if (subformula == NULL) {
+			continue;
+		}
+
 		std::unordered_set<CNF_Clause*>* subclauses = subformula->clauses;
 		for (CNF_Clause* subclause : *subclauses) {
 			clauses->insert(subclause);

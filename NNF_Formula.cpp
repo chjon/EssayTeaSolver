@@ -299,10 +299,10 @@ CNF_Formula* NNF_Formula::generateLocalCNF(
 	NNF_Formula* formulaNNF,
 	std::unordered_map<std::string, int>* indexMap
 ) {
-	std::unordered_set<CNF_Clause*>* clauses = new std::unordered_set<CNF_Clause*>();
-	std::unordered_set<int>* vars;
-
 	if (isOperator(formulaNNF->conn)) {
+		std::unordered_set<CNF_Clause*>* clauses = new std::unordered_set<CNF_Clause*>();
+		std::unordered_set<int>* vars;
+
 		int index      = indexMap->find(formulaNNF->stringRep)->second;
 		int leftIndex  = indexMap->find(formulaNNF->left->stringRep)->second;
 		int rightIndex = indexMap->find(formulaNNF->right->stringRep)->second;
@@ -344,14 +344,11 @@ CNF_Formula* NNF_Formula::generateLocalCNF(
 			delete clauses;
 			return NULL;
 		}
-	} else {
-		int index = indexMap->find(formulaNNF->stringRep)->second;
-		vars = new std::unordered_set<int>();
-		vars->insert(index);
-		clauses->insert(new CNF_Clause(vars));
-	}
 
-	return new CNF_Formula(clauses);
+		return new CNF_Formula(clauses);
+	} else {
+		return NULL;
+	}
 }
 
 int NNF_Formula::tseitinTransform(CNF_Formula** formulaCNF, NNF_Formula* formulaNNF) {
@@ -380,11 +377,6 @@ int NNF_Formula::tseitinTransform(CNF_Formula** formulaCNF, NNF_Formula* formula
 	) {
 		NNF_Formula* subformula = i->second;
 		subformulae[index] = generateLocalCNF(subformula, indexMap);
-		if (subformulae[index] == NULL) {
-			delete[] subformulae;
-			errno = -2;
-			return errno;
-		}
 	}
 
 	if (CNF_Formula::combine(formulaCNF, subformulae, index)) {
