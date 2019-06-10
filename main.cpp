@@ -11,12 +11,18 @@ int main(const int argc, const char** argv) {
 
 	NNF_Formula* formulaNNF;
 	if (NNF_Formula::parseFile(&formulaNNF, argv[1])) {
-		return errno;
+		switch (errno) {
+			case -1:
+				std::cerr << "Error while opening file: " << argv[1] << std::endl;
+				return errno;
+			default:
+				return errno;
+		}
 	}
 
 	CNF_Formula* formulaCNF;
 	if (NNF_Formula::tseitinTransform(&formulaCNF, formulaNNF)) {
-		std::cout << "Error while performing Tseitin's Transformation" << std::endl;
+		std::cerr << "Error while performing Tseitin's Transformation" << std::endl;
 		return errno;
 	}
 
