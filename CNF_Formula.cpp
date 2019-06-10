@@ -77,3 +77,7 @@ int CNF_Formula::parseDimacs(CNF_Formula** formula, std::string pathname) {
 	*formula = new CNF_Formula(clauses);
 	return 0;
 }
+
+int CNF_Formula::combine(CNF_Formula** formula, CNF_Formula** subformulae, unsigned int size) {
+	return 0;
+}

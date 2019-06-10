@@ -1,7 +1,9 @@
 #pragma once
 #include <unordered_set>
 #include <string.h>
-#include "CNF_Formula.h"
+
+class CNF_Formula;
+class NNF_Formula;
 
 class CNF_Clause {
 	private:
@@ -9,8 +11,9 @@ class CNF_Clause {
 
 		CNF_Clause(std::unordered_set<int>*);
 		~CNF_Clause(void);
-
+		
 		friend class CNF_Formula;
+		friend class NNF_Formula;
 	public:
 
 		unsigned int size(void);

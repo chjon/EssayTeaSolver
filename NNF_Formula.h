@@ -38,10 +38,13 @@ class NNF_Formula {
 		 */
 		static int toReversePolish(std::string*, std::string);
 		static std::string reversePolishErrorMessage(int);
+		
+		static int tseitinHelper(NNF_Formula*, int*, CNF_Formula**);
+
 	public:
 		~NNF_Formula(void);
 		std::string toString(void);
 
 		static int parseFile(NNF_Formula**, std::string);
-		static int tseitin(CNF_Formula**, NNF_Formula*);
+		static int tseitinTransform(CNF_Formula**, NNF_Formula*);
 };

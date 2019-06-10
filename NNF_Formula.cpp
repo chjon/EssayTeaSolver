@@ -1,9 +1,12 @@
 #include "NNF_Formula.h"
+#include "CNF_Formula.h"
+#include "CNF_Clause.h"
 #include <errno.h>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <unordered_set>
 
 /***** CONSTRUCTORS *****/
 
@@ -233,7 +236,89 @@ int NNF_Formula::parseFile(NNF_Formula** formula, std::string pathname) {
 	return 0;
 }
 
-int NNF_Formula::tseitin(CNF_Formula** formulaCNF, NNF_Formula* formulaNNF) {
+int NNF_Formula::tseitinHelper(NNF_Formula* formulaNNF, int* index, CNF_Formula** subformulae) {
+	std::unordered_set<CNF_Clause*>* clauses = new std::unordered_set<CNF_Clause*>();
+	std::unordered_set<int>* vars;
+
+	if (isOperator(formulaNNF->conn)) {
+		int leftIndex;
+		int rightIndex;
+
+		if (tseitinHelper(formulaNNF->left, index, subformulae)) {
+			return -1;
+		} else {
+			leftIndex = *index;
+		}
+
+		if (tseitinHelper(formulaNNF->right, index, subformulae)) {
+			return -1;
+		} else {
+			rightIndex = *index;
+		}
+
+		/* Insert local CNF equivalents */
+		if (formulaNNF->conn == NNF_OR) {
+			vars = new std::unordered_set<int>();
+			vars->insert(*index);
+			vars->insert(-leftIndex);
+			clauses->insert(new CNF_Clause(vars));
+			
+			vars = new std::unordered_set<int>();
+			vars->insert(*index);
+			vars->insert(-rightIndex);
+			clauses->insert(new CNF_Clause(vars));
+
+			vars = new std::unordered_set<int>();
+			vars->insert(-*index);
+			vars->insert(leftIndex);
+			vars->insert(rightIndex);
+			clauses->insert(new CNF_Clause(vars));
+
+		} else if (formulaNNF->conn == NNF_AND) {
+			vars = new std::unordered_set<int>();
+			vars->insert(-*index);
+			vars->insert(leftIndex);
+			clauses->insert(new CNF_Clause(vars));
+
+			vars = new std::unordered_set<int>();
+			vars->insert(-*index);
+			vars->insert(rightIndex);
+			clauses->insert(new CNF_Clause(vars));
+
+			vars = new std::unordered_set<int>();
+			vars->insert(*index);
+			vars->insert(-leftIndex);
+			vars->insert(-rightIndex);
+			clauses->insert(new CNF_Clause(vars));
+		} else {
+			delete clauses;
+			return -1;
+		}
+	} else {
+		vars = new std::unordered_set<int>();
+		vars->insert((formulaNNF->var < 0) ? (-*index) : *index);
+		clauses->insert(new CNF_Clause(vars));
+	}
+
+	subformulae[*index] = new CNF_Formula(clauses);
+	++*index;
+
+	return 0;
+}
+
+int NNF_Formula::tseitinTransform(CNF_Formula** formulaCNF, NNF_Formula* formulaNNF) {
 	*formulaCNF = NULL;
+	int index = 0;
+	CNF_Formula** subformulae = new CNF_Formula*[formulaNNF->size];
+	if (tseitinHelper(formulaNNF, &index, subformulae)) {
+		delete[] subformulae;
+		return -1;
+	}
+
+	if (CNF_Formula::combine(formulaCNF, subformulae, formulaNNF->size)) {
+		delete[] subformulae;
+		return -2;
+	}
+
 	return 0;
 }

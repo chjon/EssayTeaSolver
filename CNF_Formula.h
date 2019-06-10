@@ -4,12 +4,14 @@
 #include "CNF_Clause.h"
 
 class CNF_Clause;
+class NNF_Formula;
 
 class CNF_Formula {
 	private:
 		std::unordered_set<CNF_Clause*>* clauses;
-
 		CNF_Formula(std::unordered_set<CNF_Clause*>*);
+
+		friend NNF_Formula;
 
 	public:
 		~CNF_Formula(void);
@@ -18,4 +20,5 @@ class CNF_Formula {
 
 		static int generateDimacs(CNF_Formula*, std::string);
 		static int parseDimacs(CNF_Formula**, std::string);
+		static int combine(CNF_Formula**, CNF_Formula**, unsigned int len);
 };
