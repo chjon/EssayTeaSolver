@@ -6,6 +6,7 @@
 #define NNF_OR  '+'
 #define NNF_NOT '-'
 #define NNF_NONE '\0'
+#define NNF_INVARIANT (0x4243)
 
 class CNF_Formula;
 
@@ -17,6 +18,7 @@ class NNF_Formula {
 		NNF_Formula* left;
 		NNF_Formula* right;
 		std::string stringRep;
+		int invariant;
 
 		NNF_Formula(int);
 		NNF_Formula(char, NNF_Formula*, NNF_Formula*);

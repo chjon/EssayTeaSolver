@@ -16,7 +16,8 @@ NNF_Formula::NNF_Formula(int var) :
 	size{1},
 	left{NULL},
 	right{NULL},
-	stringRep{std::to_string(var)}
+	stringRep{std::to_string(var)},
+	invariant{NNF_INVARIANT}
 {}
 
 NNF_Formula::NNF_Formula(char conn, NNF_Formula* left, NNF_Formula* right) :
@@ -24,7 +25,8 @@ NNF_Formula::NNF_Formula(char conn, NNF_Formula* left, NNF_Formula* right) :
 	conn{conn},
 	size{1 + left->size + right->size},
 	left{NULL},
-	right{NULL}
+	right{NULL},
+	invariant{NNF_INVARIANT}
 {
 	if (right->stringRep.compare(left->stringRep) < 0) {
 		NNF_Formula* tmp = left;
@@ -38,9 +40,15 @@ NNF_Formula::NNF_Formula(char conn, NNF_Formula* left, NNF_Formula* right) :
 }
 
 NNF_Formula::~NNF_Formula(void) {
+	invariant = 0;
+
 	if (conn) {
-		delete left;
-		delete right;
+		if (left->invariant == NNF_INVARIANT) {
+			delete left;
+		}
+		if (right->invariant == NNF_INVARIANT) {
+			delete right;
+		}
 	}
 }
 
