@@ -13,7 +13,6 @@
 NNF_Formula::NNF_Formula(int var) :
 	var{var},
 	conn{0},
-	size{1},
 	left{NULL},
 	right{NULL},
 	stringRep{std::to_string(var)},
@@ -24,7 +23,6 @@ NNF_Formula::NNF_Formula(int var) :
 NNF_Formula::NNF_Formula(char conn, NNF_Formula* left, NNF_Formula* right) :
 	var{0},
 	conn{conn},
-	size{1 + left->size + right->size},
 	left{NULL},
 	right{NULL},
 	invariant{NNF_INVARIANT},

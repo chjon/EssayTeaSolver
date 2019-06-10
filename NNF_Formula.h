@@ -15,7 +15,6 @@ class NNF_Formula {
 	private:
 		int var;
 		char conn;
-		const unsigned int size;
 		NNF_Formula* left;
 		NNF_Formula* right;
 		std::string stringRep;
