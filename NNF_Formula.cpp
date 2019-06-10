@@ -246,6 +246,10 @@ int NNF_Formula::parseFile(NNF_Formula** formula, std::string pathname) {
 		}
 	}
 
+	if (val) {
+		formulaStack.push(new NNF_Formula(val));
+	}
+
 	*formula = formulaStack.top();
 	formulaStack.pop();
 
