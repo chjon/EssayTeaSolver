@@ -16,6 +16,7 @@ class NNF_Formula {
 		const unsigned int size;
 		NNF_Formula* left;
 		NNF_Formula* right;
+		std::string stringRep;
 
 		NNF_Formula(int);
 		NNF_Formula(char, NNF_Formula*, NNF_Formula*);
