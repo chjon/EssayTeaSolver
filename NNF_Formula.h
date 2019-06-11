@@ -38,6 +38,7 @@ class NNF_Formula {
 		 *   -3 Misplaced parenthesis
 		 *   -4 Unbalanced parentheses
 		 *   -5 Invalid token
+		 *   -6 No input
 		 */
 		static int toReversePolish(std::string*, std::string);
 		static std::string reversePolishErrorMessage(int);

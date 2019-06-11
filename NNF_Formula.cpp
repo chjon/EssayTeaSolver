@@ -105,6 +105,9 @@ std::string NNF_Formula::reversePolishErrorMessage(int errcode) {
 		case -5:
 			errMsg += "Invalid token";
 			return errMsg;
+		case -6:
+			errMsg += "No input";
+			return errMsg;
 		default:
 			return errMsg;
 	}
@@ -189,6 +192,11 @@ int NNF_Formula::toReversePolish(std::string* output, std::string input) {
 		output->push_back(NNF_SEPARATOR);
 		output->push_back(operatorStack.top());
 		operatorStack.pop();
+	}
+
+	if (output->size() == 0) {
+		errno = -6;
+		return errno;
 	}
 
 	return 0;
