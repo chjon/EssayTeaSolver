@@ -68,7 +68,7 @@ bool NNF_Formula::shouldPop(std::stack<char>* outputStack, char curr) {
 	}
 
 	char top = outputStack->top();
-	return (curr == '+' && top == '+') || (top == '.');
+	return (curr == NNF_OR && top == NNF_OR) || (top == NNF_AND);
 }
 
 bool NNF_Formula::isOperator(char candidate) {
