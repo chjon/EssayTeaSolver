@@ -34,7 +34,7 @@ NNF_Formula::NNF_Formula(char conn, NNF_Formula* left, NNF_Formula* right) :
 
 	this->left = left;
 	this->right = right;
-	stringRep = left->stringRep + conn + right->stringRep;
+	stringRep = "(" + left->stringRep + ")" + conn + "(" + right->stringRep + ")";
 }
 
 NNF_Formula::~NNF_Formula(void) {
