@@ -303,7 +303,7 @@ CNF_Formula* NNF_Formula::generateLocalCNF(
 		int leftIndex  = indexMap->find(formulaNNF->left->stringRep)->second;
 		int rightIndex = indexMap->find(formulaNNF->right->stringRep)->second;
 
-		if (formulaNNF->conn == NNF_OR) {
+		if (formulaNNF->conn == NNF_AND) {
 			index *= -1;
 			leftIndex *= -1;
 			rightIndex *= -1;
