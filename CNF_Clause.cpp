@@ -46,6 +46,11 @@ int CNF_Clause::getVar(void) {
 
 std::string CNF_Clause::toString(void) {
 	std::string s = "";
+	if (trueVar) {
+		s += std::to_string(trueVar) + " ";
+		return s;
+	}
+
 	for (int var : *vars) {
 		s += std::to_string(var) + " ";
 	}

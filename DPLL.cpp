@@ -1,7 +1,11 @@
 #include "DPLL.h"
 #include <queue>
+#include <iostream>
 
-std::unordered_set<int>* DPLL::bcp(std::vector<CNF_Clause*>* clauses, std::unordered_set<int>* assignments) {
+std::unordered_set<int>* DPLL::bcp(
+	std::unordered_set<CNF_Clause*>* clauses,
+	std::unordered_set<int>* assignments
+) {
 	std::unordered_set<int>* bcpAssignments = new std::unordered_set<int>();
 	std::queue<int> unitClauses;
 	
@@ -54,12 +58,25 @@ std::unordered_set<int>* DPLL::bcp(std::vector<CNF_Clause*>* clauses, std::unord
 	return bcpAssignments;
 }
 
-std::unordered_set<int>* DPLL::plp(std::vector<CNF_Clause*>* clauses, std::unordered_set<int>* assignments) {
+std::unordered_set<int>* DPLL::plp(
+	std::unordered_set<CNF_Clause*>* clauses,
+	std::unordered_set<int>* assignments
+) {
 	return 0;
 }
 
-void DPLL::undoAssignments(std::vector<CNF_Clause*>* clauses, std::unordered_set<int>* assignments) {
+void DPLL::undoAssignments(
+	std::unordered_set<CNF_Clause*>* clauses,
+	std::unordered_set<int>* assignments
+) {
 	for (CNF_Clause* clause : *clauses) {
 		clause->unassign(assignments);
 	}
+}
+
+bool DPLL::dpll(CNF_Formula* formula) {
+	std::unordered_set<int> assignments;
+	std::unordered_set<int>* bcpAssignments = bcp(formula->clauses, &assignments);
+
+	return false;
 }

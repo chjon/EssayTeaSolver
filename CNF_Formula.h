@@ -5,6 +5,7 @@
 
 class CNF_Clause;
 class NNF_Formula;
+class DPLL;
 
 class CNF_Formula {
 	private:
@@ -12,6 +13,7 @@ class CNF_Formula {
 		CNF_Formula(std::unordered_set<CNF_Clause*>*);
 
 		friend NNF_Formula;
+		friend DPLL;
 
 	public:
 		~CNF_Formula(void);

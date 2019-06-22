@@ -22,7 +22,7 @@ CNF_Formula::~CNF_Formula(void) {
 std::string CNF_Formula::toString(void) {
 	std::string s = "";
 	for (CNF_Clause* clause : *clauses) {
-		s += clause->toString() + " ";
+		s += "( " + clause->toString() + ") ";
 	}
 	return s;
 }
