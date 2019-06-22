@@ -15,16 +15,14 @@ NNF_Formula::NNF_Formula(int var) :
 	conn{0},
 	left{NULL},
 	right{NULL},
-	stringRep{std::to_string(var)},
-	invariant{NNF_INVARIANT}
+	stringRep{std::to_string(var)}
 {}
 
 NNF_Formula::NNF_Formula(char conn, NNF_Formula* left, NNF_Formula* right) :
 	var{0},
 	conn{conn},
 	left{NULL},
-	right{NULL},
-	invariant{NNF_INVARIANT}
+	right{NULL}
 {
 	if (right->stringRep.compare(left->stringRep) < 0) {
 		NNF_Formula* tmp = left;
@@ -38,15 +36,9 @@ NNF_Formula::NNF_Formula(char conn, NNF_Formula* left, NNF_Formula* right) :
 }
 
 NNF_Formula::~NNF_Formula(void) {
-	invariant = 0;
-
 	if (conn) {
-		if (left->invariant == NNF_INVARIANT) {
-			delete left;
-		}
-		if (right->invariant == NNF_INVARIANT) {
-			delete right;
-		}
+		delete left;
+		delete right;
 	}
 }
 
@@ -311,7 +303,7 @@ CNF_Formula* NNF_Formula::generateLocalCNF(
 		int leftIndex  = indexMap->find(formulaNNF->left->stringRep)->second;
 		int rightIndex = indexMap->find(formulaNNF->right->stringRep)->second;
 
-		if (formulaNNF->conn == NNF_AND) {
+		if (formulaNNF->conn == NNF_OR) {
 			index *= -1;
 			leftIndex *= -1;
 			rightIndex *= -1;
