@@ -48,7 +48,7 @@ class NNF_Formula {
 			std::unordered_map<std::string, int>*
 		);
 		
-		static int reduceRedundancies(
+		static int createIndexMap(
 			NNF_Formula*,
 			std::unordered_map<std::string, NNF_Formula*>*,
 			int*,

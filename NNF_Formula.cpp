@@ -269,38 +269,26 @@ int NNF_Formula::parseFile(NNF_Formula** formula, std::string pathname) {
 	return 0;
 }
 
-int NNF_Formula::reduceRedundancies(
+int NNF_Formula::createIndexMap(
 	NNF_Formula* formula,
 	std::unordered_map<std::string, NNF_Formula*>* formulaMap,
 	int* index,
 	std::unordered_map<std::string, int>* indexMap
 ) {
 	if (isOperator(formula->conn)) {
-		std::unordered_map<std::string, NNF_Formula*>::iterator found =
-			formulaMap->find(formula->left->stringRep);
-		if (found != formulaMap->end()) {
-			delete formula->left;
-			formula->left = found->second;
-		} else {
-			reduceRedundancies(formula->left, formulaMap, index, indexMap);
+		if (formulaMap->find(formula->left->stringRep) == formulaMap->end()) {
+			createIndexMap(formula->left, formulaMap, index, indexMap);
 		}
 
-		found = formulaMap->find(formula->right->stringRep);
-		if (found != formulaMap->end()) {
-			delete formula->right;
-			formula->right = found->second;
-		} else {
-			reduceRedundancies(formula->right, formulaMap, index, indexMap);
+		if (formulaMap->find(formula->right->stringRep) == formulaMap->end()) {
+			createIndexMap(formula->right, formulaMap, index, indexMap);
 		}
 
 		indexMap->insert(std::pair<std::string, int>(formula->stringRep, *index));
 		++*index;
 	} else {
 		int absVar = (formula->var > 0) ? (formula->var) : (-formula->var);
-		std::unordered_map<std::string, int>::iterator found =
-			indexMap->find(std::to_string(absVar));
-		
-		if (found == indexMap->end()) {
+		if (indexMap->find(std::to_string(absVar)) == indexMap->end()) {
 			indexMap->insert(std::pair<std::string, int>(std::to_string(absVar), *index));
 			indexMap->insert(std::pair<std::string, int>(std::to_string(-absVar), -*index));
 			++*index;
@@ -323,43 +311,27 @@ CNF_Formula* NNF_Formula::generateLocalCNF(
 		int leftIndex  = indexMap->find(formulaNNF->left->stringRep)->second;
 		int rightIndex = indexMap->find(formulaNNF->right->stringRep)->second;
 
-		if (formulaNNF->conn == NNF_OR) {
-			vars = new std::unordered_set<int>();
-			vars->insert(index);
-			vars->insert(-leftIndex);
-			clauses->insert(new CNF_Clause(vars));
-			
-			vars = new std::unordered_set<int>();
-			vars->insert(index);
-			vars->insert(-rightIndex);
-			clauses->insert(new CNF_Clause(vars));
-
-			vars = new std::unordered_set<int>();
-			vars->insert(-index);
-			vars->insert(leftIndex);
-			vars->insert(rightIndex);
-			clauses->insert(new CNF_Clause(vars));
-
-		} else if (formulaNNF->conn == NNF_AND) {
-			vars = new std::unordered_set<int>();
-			vars->insert(-index);
-			vars->insert(leftIndex);
-			clauses->insert(new CNF_Clause(vars));
-
-			vars = new std::unordered_set<int>();
-			vars->insert(-index);
-			vars->insert(rightIndex);
-			clauses->insert(new CNF_Clause(vars));
-
-			vars = new std::unordered_set<int>();
-			vars->insert(index);
-			vars->insert(-leftIndex);
-			vars->insert(-rightIndex);
-			clauses->insert(new CNF_Clause(vars));
-		} else {
-			delete clauses;
-			return NULL;
+		if (formulaNNF->conn == NNF_AND) {
+			index *= -1;
+			leftIndex *= -1;
+			rightIndex *= -1;
 		}
+
+		vars = new std::unordered_set<int>();
+		vars->insert(index);
+		vars->insert(-leftIndex);
+		clauses->insert(new CNF_Clause(vars));
+		
+		vars = new std::unordered_set<int>();
+		vars->insert(index);
+		vars->insert(-rightIndex);
+		clauses->insert(new CNF_Clause(vars));
+
+		vars = new std::unordered_set<int>();
+		vars->insert(-index);
+		vars->insert(leftIndex);
+		vars->insert(rightIndex);
+		clauses->insert(new CNF_Clause(vars));
 
 		return new CNF_Formula(clauses);
 	} else {
@@ -376,7 +348,7 @@ int NNF_Formula::tseitinTransform(CNF_Formula** formulaCNF, NNF_Formula* formula
 
 	/* Minimize redundant nodes */
 	int index = 1;
-	if (reduceRedundancies(formulaNNF, formulaMap, &index, indexMap)) {
+	if (createIndexMap(formulaNNF, formulaMap, &index, indexMap)) {
 		delete formulaMap;
 		delete indexMap;
 		errno = -1;
