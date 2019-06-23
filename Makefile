@@ -5,14 +5,14 @@ CFLAGS  = -Wall -g -std=c++14
 LDFLAGS = -g
 LDLIBS  = -lz
 
-SRCS = NNF_to_CNF.cpp dpll_main.cpp CNF_Clause.cpp CNF_Formula.cpp NNF_Formula.cpp DPLL.cpp
+SRCS = tseitin_transform_main.cpp dpll_main.cpp CNF_Clause.cpp CNF_Formula.cpp NNF_Formula.cpp DPLL.cpp
 OBJS = CNF_Clause.o CNF_Formula.o NNF_Formula.o DPLL.o
 
-TARGETS = NNF_to_CNF DPLL
+TARGETS = TT DPLL
 
-all: NNF_to_CNF DPLL	
+all: TT DPLL	
 
-NNF_to_CNF: NNF_to_CNF.o $(OBJS)
+TT: tseitin_transform_main.o $(OBJS)
 	$(LD) -o $@ $^ $(LDLIBS) $(LDFLAGS) 
 
 DPLL: dpll_main.o $(OBJS)
