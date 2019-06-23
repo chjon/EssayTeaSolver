@@ -4,10 +4,14 @@
 
 std::unordered_set<int>* DPLL::bcp(
 	std::unordered_set<CNF_Clause*>* clauses,
-	std::unordered_set<int>* assignments
+	std::unordered_set<int>* assignments,
+	int newAssignment
 ) {
 	std::unordered_set<int>* bcpAssignments = new std::unordered_set<int>();
 	std::queue<int> unitClauses;
+	if (newAssignment) {
+		unitClauses.push(newAssignment);
+	}
 	
 	/* Find initial unit clauses */
 	for (CNF_Clause* clause : *clauses) {
@@ -76,33 +80,55 @@ void DPLL::undoAssignments(
 
 bool DPLL::dpllHelper(
 	std::unordered_set<CNF_Clause*>* clauses,
-	std::unordered_set<int>* assignments
+	std::unordered_set<int>* assignments,
+	int newAssignment
 ) {
 	/* Perform BCP */
-	std::unordered_set<int>* newAssignments = bcp(clauses, assignments);
+	std::unordered_set<int>* newAssignments = bcp(clauses, assignments, newAssignment);
 
 	/* Check if the formula has been reduced to false */
 	if (newAssignments == NULL) {
 		return false;
 	}
 
-	/* Select an unassigned variable */
-	int selectedVar = 0;
+	/* Check if the formula has been reduced to true */
+	bool satisfied = true;
 	for (CNF_Clause* clause : *clauses) {
-		if (clause->status() == CNF_CLAUSE_UNKNOWN) {
-			selectedVar = clause->getVar();
+		if (clause->status() != CNF_CLAUSE_SATISFIED) {
+			satisfied = false;
 			break;
 		}
 	}
 
-	/* Check if the formula has been reduced to true */
-	if (selectedVar == 0) {
+	if (satisfied) {
 		return true;
+	}
+
+	/* Select an unassigned variable */
+	int selectedVar = 0;
+	for (CNF_Clause* clause : *clauses) {
+		if (clause->status() != CNF_CLAUSE_UNKNOWN) {
+			continue;
+		}
+
+		for (int var : *clause->vars) {
+			if (
+				assignments->find( var) == assignments->end() &&
+				assignments->find(-var) == assignments->end()
+			) {
+				selectedVar = var;
+				break;
+			}
+		}
+
+		if (selectedVar) {
+			break;
+		}
 	}
 
 	/* Try assigning the variable to true */
 	assignments->insert(selectedVar);
-	if (dpllHelper(clauses, assignments)) {
+	if (dpllHelper(clauses, assignments, selectedVar)) {
 		return true;
 	} else {
 		assignments->erase(selectedVar);
@@ -110,7 +136,7 @@ bool DPLL::dpllHelper(
 
 	/* Try assigning the variable to false */
 	assignments->insert(-selectedVar);
-	if (dpllHelper(clauses, assignments)) {
+	if (dpllHelper(clauses, assignments, -selectedVar)) {
 		return true;
 	} else {
 		assignments->erase(-selectedVar);
@@ -126,7 +152,13 @@ bool DPLL::dpllHelper(
 	return false;
 }
 
-bool DPLL::dpll(CNF_Formula* formula) {
-	std::unordered_set<int> assignments;
-	return dpllHelper(formula->clauses, &assignments);
+std::unordered_set<int>* DPLL::dpll(CNF_Formula* formula) {
+	std::unordered_set<int>* assignments = new std::unordered_set<int>();
+
+	if (dpllHelper(formula->clauses, assignments, 0)) {
+		return assignments;
+	}
+
+	delete assignments;
+	return NULL;
 }

@@ -22,7 +22,18 @@ int main(const int argc, const char** argv) {
 	}
 
 	std::cout << formula->toString() << std::endl;
-	std::cout << "------------" << std::endl;
-	DPLL::dpll(formula);
-	std::cout << formula->toString() << std::endl;
+	std::unordered_set<int>* satAssignment = DPLL::dpll(formula);
+	if (satAssignment) {
+		std::cout << "SAT" << std::endl;
+		for (int var : *satAssignment) {
+			std::cout << var << std::endl;
+		}
+	} else {
+		std::cout << "UNSAT" << std::endl;
+	}
+
+	delete formula;
+	if (satAssignment) {
+		delete satAssignment;
+	}
 }

@@ -10,7 +10,11 @@ class DPLL {
 		 *     NULL - contradiction
 		 *     std::unordered_set<int>* - variables that were assigned by BCP
 		 */
-		static std::unordered_set<int>* bcp(std::unordered_set<CNF_Clause*>*, std::unordered_set<int>*);
+		static std::unordered_set<int>* bcp(
+			std::unordered_set<CNF_Clause*>*,
+			std::unordered_set<int>*,
+			int
+		);
 
 		/**
 		 * Pure literal propagation: assign literals that only appear positively or negatively
@@ -27,8 +31,8 @@ class DPLL {
 		/**
 		 * Main DPLL algorithm
 		 */
-		static bool dpllHelper(std::unordered_set<CNF_Clause*>*, std::unordered_set<int>*);
+		static bool dpllHelper(std::unordered_set<CNF_Clause*>*, std::unordered_set<int>*, int);
 
 	public:
-		static bool dpll(CNF_Formula*);
+		static std::unordered_set<int>* dpll(CNF_Formula*);
 };
