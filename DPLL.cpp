@@ -107,7 +107,7 @@ bool DPLL::dpllHelper(
 	/* Select an unassigned variable */
 	int selectedVar = 0;
 	for (CNF_Clause* clause : *clauses) {
-		if (clause->status() != CNF_CLAUSE_UNKNOWN) {
+		if (clause->status() == CNF_CLAUSE_SATISFIED) {
 			continue;
 		}
 
