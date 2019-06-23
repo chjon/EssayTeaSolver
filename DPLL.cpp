@@ -1,12 +1,13 @@
 #include "DPLL.h"
+#include <errno.h>
 #include <queue>
 
-std::unordered_set<int>* DPLL::bcp(
+int DPLL::bcp(
 	std::unordered_set<CNF_Clause*>* clauses,
 	std::unordered_set<int>* assignments,
-	int newAssignment
+	int newAssignment,
+	std::unordered_set<int>* generatedAssignments
 ) {
-	std::unordered_set<int>* bcpAssignments = new std::unordered_set<int>();
 	std::queue<int> unitClauses;
 	if (newAssignment) {
 		unitClauses.push(newAssignment);
@@ -27,14 +28,12 @@ std::unordered_set<int>* DPLL::bcp(
 
 		/* Check for contradictory assignments */
 		if (assignments->find(-unitVar) != assignments->end()) {
-			undoAssignments(clauses, assignments, bcpAssignments);
-			delete bcpAssignments;
-			return NULL;
+			return -1;
 		}
 
 		/* Add unit variable to assignments */
 		assignments->insert(unitVar);
-		bcpAssignments->insert(unitVar);
+		generatedAssignments->insert(unitVar);
 
 		/* Propagate variable */
 		for (CNF_Clause* clause : *clauses) {
@@ -51,14 +50,12 @@ std::unordered_set<int>* DPLL::bcp(
 
 			/* Check for contradictory assignments */
 			if (clause->status() == CNF_CLAUSE_CONTRADICT) {
-				undoAssignments(clauses, assignments, bcpAssignments);
-				delete bcpAssignments;
-				return NULL;
+				return -1;
 			}
 		}
 	}
 
-	return bcpAssignments;
+	return 0;
 }
 
 std::unordered_set<int>* DPLL::plp(
@@ -89,11 +86,12 @@ bool DPLL::dpllHelper(
 	std::unordered_set<int>* assignments,
 	int newAssignment
 ) {
-	/* Perform BCP */
-	std::unordered_set<int>* newAssignments = bcp(clauses, assignments, newAssignment);
+	std::unordered_set<int> generatedAssignments;
 
+	/* Perform BCP */
 	/* Check if the formula has been reduced to false */
-	if (newAssignments == NULL) {
+	if (bcp(clauses, assignments, newAssignment, &generatedAssignments)) {
+		undoAssignments(clauses, assignments, &generatedAssignments);
 		return false;
 	}
 
@@ -143,9 +141,7 @@ bool DPLL::dpllHelper(
 	}
 
 	/* Undo assignments */
-	undoAssignments(clauses, assignments, newAssignments);
-
-	delete newAssignments;
+	undoAssignments(clauses, assignments, &generatedAssignments);
 	return false;
 }
 
