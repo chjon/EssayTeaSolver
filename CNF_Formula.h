@@ -20,7 +20,18 @@ class CNF_Formula {
 
 		std::string toString(void);
 
+		/**
+		 * Generate the dimacs file corresponding to the given formula
+		 */
 		static int generateDimacs(CNF_Formula*, std::string);
+
+		/**
+		 * Generate a CNF formula from a dimacs file
+		 */
 		static int parseDimacs(CNF_Formula**, std::string);
+
+		/**
+		 * Join multiple CNF formulae into one 
+		 */
 		static int combine(CNF_Formula**, CNF_Formula**, unsigned int len);
 };
