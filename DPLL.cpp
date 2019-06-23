@@ -1,6 +1,5 @@
 #include "DPLL.h"
 #include <queue>
-#include <iostream>
 
 std::unordered_set<int>* DPLL::bcp(
 	std::unordered_set<CNF_Clause*>* clauses,
