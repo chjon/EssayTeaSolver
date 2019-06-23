@@ -7,13 +7,12 @@ class DPLL {
 		/**
 		 * Boolean constraint propagation: perform unit resolution until saturation
 		 * @returns
-		 *    -1: contradiction
+		 *    -1: reduced to contradiction
 		 *     0: success
 		 */
 		static int bcp(
 			std::unordered_set<CNF_Clause*>*,
 			std::unordered_set<int>*,
-			int,
 			std::unordered_set<int>*
 		);
 

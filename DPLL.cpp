@@ -5,11 +5,10 @@
 int DPLL::bcp(
 	std::unordered_set<CNF_Clause*>* clauses,
 	std::unordered_set<int>* assignments,
-	int newAssignment,
-	std::unordered_set<int>* generatedAssignments
+	std::unordered_set<int>* newAssignments
 ) {
 	std::queue<int> unitClauses;
-	if (newAssignment) {
+	for (int newAssignment : *newAssignments) {
 		unitClauses.push(newAssignment);
 	}
 	
@@ -21,6 +20,7 @@ int DPLL::bcp(
 	}
 
 	/* Perform BCP */
+	int satisfied;
 	while (!unitClauses.empty()) {
 		/* Get unit variable */
 		int unitVar = unitClauses.front();
@@ -33,29 +33,29 @@ int DPLL::bcp(
 
 		/* Add unit variable to assignments */
 		assignments->insert(unitVar);
-		generatedAssignments->insert(unitVar);
+		newAssignments->insert(unitVar);
 
 		/* Propagate variable */
+		satisfied = 1;
 		for (CNF_Clause* clause : *clauses) {
-			if (clause->status() == CNF_CLAUSE_SATISFIED) {
-				continue;
-			}
+			if (clause->status() != CNF_CLAUSE_SATISFIED) {
+				satisfied = 0;
+				clause->assign(unitVar);
 
-			clause->assign(unitVar);
+				/* Add variable to queue if clause is unit */
+				if (clause->isUnit()) {
+					unitClauses.push(clause->getVar());
+				}
 
-			/* Add variable to queue if clause is unit */
-			if (clause->isUnit()) {
-				unitClauses.push(clause->getVar());
-			}
-
-			/* Check for contradictory assignments */
-			if (clause->status() == CNF_CLAUSE_CONTRADICT) {
-				return -1;
+				/* Check for contradictory assignments */
+				if (clause->status() == CNF_CLAUSE_CONTRADICT) {
+					return -1;
+				}
 			}
 		}
 	}
 
-	return 0;
+	return satisfied;
 }
 
 std::unordered_set<int>* DPLL::plp(
@@ -87,25 +87,17 @@ bool DPLL::dpllHelper(
 	int newAssignment
 ) {
 	std::unordered_set<int> generatedAssignments;
-
-	/* Perform BCP */
-	/* Check if the formula has been reduced to false */
-	if (bcp(clauses, assignments, newAssignment, &generatedAssignments)) {
-		undoAssignments(clauses, assignments, &generatedAssignments);
-		return false;
+	if (newAssignment) {
+		generatedAssignments.insert(newAssignment);
 	}
 
-	/* Check if the formula has been reduced to true */
-	bool satisfied = true;
-	for (CNF_Clause* clause : *clauses) {
-		if (clause->status() != CNF_CLAUSE_SATISFIED) {
-			satisfied = false;
-			break;
-		}
-	}
-
-	if (satisfied) {
-		return true;
+	/* Perform BCP and check for reduction to true/false */
+	switch (bcp(clauses, assignments, &generatedAssignments)) {
+		case -1:
+			undoAssignments(clauses, assignments, &generatedAssignments);
+			return false;
+		case 1:
+			return true;
 	}
 
 	/* Select an unassigned variable */
