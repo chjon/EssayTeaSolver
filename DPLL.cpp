@@ -27,8 +27,7 @@ std::unordered_set<int>* DPLL::bcp(
 
 		/* Check for contradictory assignments */
 		if (assignments->find(-unitVar) != assignments->end()) {
-			undoAssignments(clauses, bcpAssignments);
-			undoAssignments(assignments, bcpAssignments);
+			undoAssignments(clauses, assignments, bcpAssignments);
 			delete bcpAssignments;
 			return NULL;
 		}
@@ -52,8 +51,7 @@ std::unordered_set<int>* DPLL::bcp(
 
 			/* Check for contradictory assignments */
 			if (clause->status() == CNF_CLAUSE_CONTRADICT) {
-				undoAssignments(clauses, bcpAssignments);
-				undoAssignments(assignments, bcpAssignments);
+				undoAssignments(clauses, assignments, bcpAssignments);
 				delete bcpAssignments;
 				return NULL;
 			}
@@ -72,17 +70,15 @@ std::unordered_set<int>* DPLL::plp(
 
 void DPLL::undoAssignments(
 	std::unordered_set<CNF_Clause*>* clauses,
-	std::unordered_set<int>* toUndo
-) {
-	for (CNF_Clause* clause : *clauses) {
-		clause->unassign(toUndo);
-	}
-}
-
-void DPLL::undoAssignments(
 	std::unordered_set<int>* assignments,
 	std::unordered_set<int>* toUndo
 ) {
+	/* Undo clause assignments */
+	for (CNF_Clause* clause : *clauses) {
+		clause->unassign(toUndo);
+	}
+
+	/* Undo variable assignments */
 	for (int var : *toUndo) {
 		assignments->erase(var);
 	}
@@ -147,8 +143,7 @@ bool DPLL::dpllHelper(
 	}
 
 	/* Undo assignments */
-	undoAssignments(clauses, newAssignments);
-	undoAssignments(assignments, newAssignments);
+	undoAssignments(clauses, assignments, newAssignments);
 
 	delete newAssignments;
 	return false;

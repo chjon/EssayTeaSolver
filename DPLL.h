@@ -26,8 +26,11 @@ class DPLL {
 		/**
 		 * Undo variable assignments
 		 */
-		static void undoAssignments(std::unordered_set<CNF_Clause*>*, std::unordered_set<int>*);
-		static void undoAssignments(std::unordered_set<int>*, std::unordered_set<int>*);
+		static void undoAssignments(
+			std::unordered_set<CNF_Clause*>*,
+			std::unordered_set<int>*,
+			std::unordered_set<int>*
+		);
 
 		/**
 		 * Main DPLL algorithm
