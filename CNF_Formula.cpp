@@ -1,7 +1,6 @@
 #include "CNF_Formula.h"
 #include <errno.h>
 #include <fstream>
-#include <string>
 
 /***** CONSTRUCTORS *****/
 

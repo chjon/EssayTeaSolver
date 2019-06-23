@@ -1,7 +1,5 @@
 #include "CNF_Clause.h"
 #include <sstream>
-#include <iostream>
-#define ATOI_BUFFER_LENGTH (32)
 
 /***** CONSTRUCTORS *****/
 

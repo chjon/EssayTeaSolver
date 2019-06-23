@@ -1,6 +1,6 @@
+#pragma once
 #include "CNF_Formula.h"
 #include <unordered_set>
-#include <vector>
 
 class DPLL {
 	private:

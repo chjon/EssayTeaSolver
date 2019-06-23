@@ -1,5 +1,5 @@
-#include <iostream>
 #include "DPLL.h"
+#include <iostream>
 
 int main(const int argc, const char** argv) {
 	if (argc != 2) {
@@ -23,7 +23,11 @@ int main(const int argc, const char** argv) {
 
 	std::unordered_set<int>* satAssignment = DPLL::dpll(formula);
 	if (satAssignment) {
-		std::cout << "SAT" << std::endl;
+		std::cout << "SAT: ";
+		for (int var : *satAssignment) {
+			std::cout << var << " ";
+		}
+		std::cout << std::endl;
 		delete satAssignment;
 	} else {
 		std::cout << "UNSAT" << std::endl;
