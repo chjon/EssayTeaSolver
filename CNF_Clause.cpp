@@ -83,11 +83,18 @@ int CNF_Clause::unassign(std::unordered_set<int>* assignments) {
 	}
 
 	for (int var : *assignments) {
-		if (trueVar == var) {
+		if (trueVar == var || trueVar == -var) {
 			trueVar = 0;
-		} else if (falseVars->find(var) != falseVars->end()) {
+		}
+		
+		if (falseVars->find(var) != falseVars->end()) {
 			vars->insert(var);
 			falseVars->erase(var);
+		}
+
+		if (falseVars->find(-var) != falseVars->end()) {
+			vars->insert(-var);
+			falseVars->erase(-var);
 		}
 	}
 
