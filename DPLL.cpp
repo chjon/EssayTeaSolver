@@ -20,7 +20,7 @@ int DPLL::bcp(
 	}
 
 	/* Perform BCP */
-	int satisfied;
+	int satisfied = 0;
 	while (!unitClauses.empty()) {
 		/* Get unit variable */
 		int unitVar = unitClauses.front();
@@ -120,6 +120,11 @@ bool DPLL::dpllHelper(
 		if (selectedVar) {
 			break;
 		}
+	}
+
+	/* Check if every clause is true */
+	if (!selectedVar) {
+		return true;
 	}
 
 	/* Try assigning the variable to true */
