@@ -373,6 +373,8 @@ int NNF_Formula::tseitinTransform(CNF_Formula** formulaCNF, NNF_Formula* formula
 		return errno;
 	}
 
+	delete formulaMap;
+	delete indexMap;
 	delete[] subformulae;
 	return 0;
 }
