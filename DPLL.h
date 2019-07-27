@@ -17,13 +17,6 @@ class DPLL {
 		);
 
 		/**
-		 * Pure literal propagation: assign literals that only appear positively or negatively
-		 * @returns
-		 *     std::unordered_set<int>* - variables that were assigned by PLP
-		 */
-		static std::unordered_set<int>* plp(std::unordered_set<CNF_Clause*>*, std::unordered_set<int>*);
-
-		/**
 		 * Undo variable assignments
 		 */
 		static void undoAssignments(

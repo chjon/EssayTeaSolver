@@ -58,13 +58,6 @@ int DPLL::bcp(
 	return satisfied;
 }
 
-std::unordered_set<int>* DPLL::plp(
-	std::unordered_set<CNF_Clause*>* clauses,
-	std::unordered_set<int>* assignments
-) {
-	return 0;
-}
-
 void DPLL::undoAssignments(
 	std::unordered_set<CNF_Clause*>* clauses,
 	std::unordered_set<int>* assignments,
