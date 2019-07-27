@@ -338,7 +338,7 @@ int NNF_Formula::tseitinTransform(CNF_Formula** formulaCNF, NNF_Formula* formula
 	formulaMap = new std::unordered_map<std::string, NNF_Formula*>();
 	indexMap = new std::unordered_map<std::string, int>();
 
-	/* Minimize redundant nodes */
+	/* Index and identify identical nodes */
 	int index = 1;
 	if (createIndexMap(formulaNNF, formulaMap, &index, indexMap)) {
 		delete formulaMap;
