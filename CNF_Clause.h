@@ -15,15 +15,15 @@ class CNF_Clause {
 		std::unordered_set<int>* vars;
 		std::unordered_set<int>* falseVars;
 		int trueVar;
-
-		CNF_Clause(std::unordered_set<int>*);
-		~CNF_Clause(void);
 		
 		friend class CNF_Formula;
 		friend class NNF_Formula;
 		friend class DPLL;
 
 	public:
+		CNF_Clause(std::unordered_set<int>*);
+		~CNF_Clause(void);
+
 		/***** Accessors *****/
 		unsigned int size(void);
 		bool isUnit(void);

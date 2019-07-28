@@ -5,17 +5,20 @@ CFLAGS  = -Wall -g -std=c++14
 LDFLAGS = -g
 LDLIBS  = -lz
 
-SRCS = tseitin_transform_main.cpp dpll_main.cpp CNF_Clause.cpp CNF_Formula.cpp NNF_Formula.cpp DPLL.cpp
-OBJS = CNF_Clause.o CNF_Formula.o NNF_Formula.o DPLL.o
+SRCS = tseitin_transform_main.cpp dpll_main.cpp vertex_cover_main.cpp CNF_Clause.cpp CNF_Formula.cpp NNF_Formula.cpp DPLL.cpp
+OBJS = CNF_Clause.o CNF_Formula.o NNF_Formula.o DPLL.o Graph.o
 
-TARGETS = TT DPLL
+TARGETS = TT DPLL VC
 
-all: TT DPLL	
+all: TT DPLL VC
 
 TT: tseitin_transform_main.o $(OBJS)
 	$(LD) -o $@ $^ $(LDLIBS) $(LDFLAGS) 
 
 DPLL: dpll_main.o $(OBJS)
+	$(LD) -o $@ $^ $(LDLIBS) $(LDFLAGS) 
+
+VC: vertex_cover_main.o $(OBJS)
 	$(LD) -o $@ $^ $(LDLIBS) $(LDFLAGS) 
 
 %.o: %.cpp

@@ -10,12 +10,12 @@ class DPLL;
 class CNF_Formula {
 	private:
 		std::unordered_set<CNF_Clause*>* clauses;
-		CNF_Formula(std::unordered_set<CNF_Clause*>*);
 
 		friend NNF_Formula;
 		friend DPLL;
 
 	public:
+		CNF_Formula(std::unordered_set<CNF_Clause*>*);
 		~CNF_Formula(void);
 
 		std::string toString(void);
