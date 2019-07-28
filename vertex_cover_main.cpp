@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Graph.h"
+#include "Vertex_Cover.h"
 
 int main (const int argc, const char** argv) {
     if (argc != 3) {
@@ -31,7 +31,7 @@ int main (const int argc, const char** argv) {
         }
     }
 
-    std::unordered_set<int>* satAssignment = Graph::getVertexCover(g, atoi(argv[2]));;
+    std::unordered_set<int>* satAssignment = Vertex_Cover::getVertexCover(g, atoi(argv[2]));;
 	if (satAssignment) {
 		std::cout << "SAT: ";
 		for (int var : *satAssignment) {

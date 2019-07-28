@@ -9,6 +9,7 @@
 class CNF_Formula;
 class NNF_Formula;
 class DPLL;
+class Vertex_Cover;
 
 class CNF_Clause {
 	private:
@@ -16,14 +17,15 @@ class CNF_Clause {
 		std::unordered_set<int>* falseVars;
 		int trueVar;
 		
-		friend class CNF_Formula;
-		friend class NNF_Formula;
-		friend class DPLL;
-
-	public:
 		CNF_Clause(std::unordered_set<int>*);
 		~CNF_Clause(void);
 
+		friend class CNF_Formula;
+		friend class NNF_Formula;
+		friend class DPLL;
+		friend class Vertex_Cover;
+
+	public:
 		/***** Accessors *****/
 		unsigned int size(void);
 		bool isUnit(void);

@@ -6,16 +6,18 @@
 class CNF_Clause;
 class NNF_Formula;
 class DPLL;
+class Vertex_Cover;
 
 class CNF_Formula {
 	private:
 		std::unordered_set<CNF_Clause*>* clauses;
+		CNF_Formula(std::unordered_set<CNF_Clause*>*);
 
-		friend NNF_Formula;
-		friend DPLL;
+		friend class NNF_Formula;
+		friend class DPLL;
+		friend class Vertex_Cover;
 
 	public:
-		CNF_Formula(std::unordered_set<CNF_Clause*>*);
 		~CNF_Formula(void);
 
 		std::string toString(void);
