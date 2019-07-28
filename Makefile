@@ -3,7 +3,6 @@ LD = g++
 
 CFLAGS  = -Wall -g -std=c++14 
 LDFLAGS = -g
-LDLIBS  = -lz
 
 SRCS = \
 	tseitin_transform_main.cpp dpll_main.cpp vertex_cover_main.cpp \
@@ -16,13 +15,13 @@ TARGETS = TT DPLL VC
 all: TT DPLL VC
 
 TT: tseitin_transform_main.o $(OBJS)
-	$(LD) -o $@ $^ $(LDLIBS) $(LDFLAGS) 
+	$(LD) -o $@ $^ $(LDFLAGS) 
 
 DPLL: dpll_main.o $(OBJS)
-	$(LD) -o $@ $^ $(LDLIBS) $(LDFLAGS) 
+	$(LD) -o $@ $^ $(LDFLAGS) 
 
 VC: vertex_cover_main.o $(OBJS)
-	$(LD) -o $@ $^ $(LDLIBS) $(LDFLAGS) 
+	$(LD) -o $@ $^ $(LDFLAGS) 
 
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c $< 
