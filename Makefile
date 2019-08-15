@@ -29,8 +29,6 @@ VC: vertex_cover_main.o $(OBJS)
 %.d: %.cpp
 	gcc -MM -MF $@ $<
 
--include $(SRCS:.cpp=.d)
-
 .PHONY: clean
 clean:
 	rm -f *.d *.o $(TARGETS) 
